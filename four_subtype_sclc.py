@@ -9,10 +9,10 @@ def k_fate(ename, k_fate_0, k_fate_x, KD_Kx_fate, effector_cell_obs):
 
 Model()
 
-Monomer('NE')
-Monomer('NEv1')
-Monomer('NEv2')
-Monomer('NonNE')
+Monomer('NE') # A (ASCL1)
+Monomer('NEv1') # N (NEUROD1)
+Monomer('NEv2') # A2 (ASCL1)
+Monomer('NonNE') # Y (YAP1)
 
 Parameter('NE_init', 100)
 Initial(NE(), NE_init)

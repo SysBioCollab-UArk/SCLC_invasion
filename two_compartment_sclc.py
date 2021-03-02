@@ -18,7 +18,6 @@ KD_Kx_NE_die = [1000.0, 1000.0]
 
 ##### NEv1 #####
 
-# Epithelium #
 k_NEv1_div_0 = [1.0, 1.0] # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_NEv1_div_x = [2.0, 2.0]
 KD_Kx_NEv1_div = [1000.0, 1000.0]
@@ -28,7 +27,6 @@ KD_Kx_NEv1_die = [1000.0, 1000.0]
 
 ##### NEv2 #####
 
-# Epithelium #
 k_NEv2_div_0 = [1.0, 1.0] # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_NEv2_div_x = [2.0, 2.0]
 KD_Kx_NEv2_div = [1000.0, 1000.0]
@@ -38,7 +36,6 @@ KD_Kx_NEv2_die = [1000.0, 1000.0]
 
 ##### nonNE #####
 
-# Epithelium #
 k_nonNE_div_0 = [1.1, 1.1]  # [epithelium, stroma]
 k_nonNE_div_x = [0.9, 0.9]
 KD_Kx_nonNE_div = [1000.0, 1000.0]
@@ -46,25 +43,21 @@ k_nonNe_die = [0.1, 0.1]
 
 ##### NE <> NEv1 #####
 
-# Epithelium #
 kf_diff_ne_nev1 = [0.1, 0.1]  # [epithelium, stroma]
 kr_diff_ne_nev1 = [0.1, 0.1]
 
 ##### NE <> NEv2 #####
 
-# Epithelium #
 kf_diff_ne_nev2 = [0.1, 0.1] # [epithelium, stroma]
 kr_diff_ne_nev2 = [0.075, 0.075]
 
 ##### NEv1 <> NEv2 #####
 
-# Epithelium #
 kf_diff_nev1_nev2 = [0.1, 0.1] # [epithelium, stroma]
 kr_diff_nev1_nev2 = [0.1, 0.1]
 
 ##### NEv1 >> nonNE #####
 
-# Epithelium #
 kf_diff_nev1_nonNe = [5.0, 5.0] # [epithelium, stroma]
 
 Model()
@@ -230,10 +223,6 @@ for C_name in [c.name for c in cmp] + ['TOT']:
 
 plt.show()
     
-
-
-
-
 
 
 

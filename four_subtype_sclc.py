@@ -9,91 +9,91 @@ def k_fate(ename, k_fate_0, k_fate_x, KD_Kx_fate, effector_cell_obs):
 
 Model()
 
-Monomer('NE') # A (ASCL1)
-Monomer('NEv1') # N (NEUROD1)
-Monomer('NEv2') # A2 (ASCL1)
-Monomer('NonNE') # Y (YAP1)
+Monomer('A') # NE (ASCL1)
+Monomer('N') # NEv1 (NEUROD1)
+Monomer('A2') # NEv2 (ASCL1)
+Monomer('Y') # NonNE (YAP1)
 
-Parameter('NE_init', 100)
-Initial(NE(), NE_init)
+Parameter('A_init', 100)
+Initial(A(), A_init)
 
-Observable('NE_obs', NE())
-Observable('NEv1_obs', NEv1())
-Observable('NEv2_obs', NEv2())
-Observable('NonNE_obs', NonNE())
-Observable('NE_all', NE()+NEv1()+NEv2())
+Observable('A_obs', A())
+Observable('N_obs', N())
+Observable('A2_obs', A2())
+Observable('Y_obs', Y())
+Observable('NE_all', A()+N()+A2())
 
-# Parameter('k_ne_div', 1)
-Parameter('k_NE_div_0', 1) # TPCs divide approximately once per day in culture
-Parameter('k_NE_div_x', 2)
-Parameter('KD_Kx_NE_div', 1000)
-k_fate('k_NE_div', k_NE_div_0, k_NE_div_x, KD_Kx_NE_div, NonNE_obs)
-Rule('NE_div', NE() >> NE() + NE(), k_NE_div)
+# Parameter('k_ne_div', 1) #division role for the N subtype
+Parameter('k_A_div_0', 1) # TPCs divide approximately once per day in culture
+Parameter('k_A_div_x', 2)
+Parameter('KD_Kx_A_div', 1000)
+k_fate('k_A_div', k_A_div_0, k_A_div_x, KD_Kx_A_div, Y_obs)
+Rule('A_div', A() >> A() + A(), k_A_div)   # >> division
 
 # Parameter('k_ne_die', 0.9)
-Parameter('k_NE_die_0', 0.9)
-Parameter('k_NE_die_x', 0.1)
-Parameter('KD_Kx_NE_die', 1000)
-k_fate('k_NE_die', k_NE_die_0, k_NE_die_x, KD_Kx_NE_die, NonNE_obs)
-Rule('NE_die', NE() >> None, k_NE_die)
+Parameter('k_A_die_0', 0.9)
+Parameter('k_A_die_x', 0.1)
+Parameter('KD_Kx_A_die', 1000)
+k_fate('k_A_die', k_A_die_0, k_A_die_x, KD_Kx_A_die, Y_obs)
+Rule('A_die', A() >> None, k_A_die)  # death
 
-# Parameter('k_nev1_div', 1)
-Parameter('k_NEv1_div_0', 1) # TPCs divide approximately once per day in culture
-Parameter('k_NEv1_div_x', 2)
-Parameter('KD_Kx_NEv1_div', 1000)
-k_fate('k_NEv1_div', k_NEv1_div_0, k_NEv1_div_x, KD_Kx_NEv1_div, NonNE_obs)
-Rule('NEv1_div', NEv1() >> NEv1() + NEv1(), k_NEv1_div)
+# Parameter('k_N_div', 1)
+Parameter('k_N_div_0', 1) # TPCs divide approximately once per day in culture
+Parameter('k_N_div_x', 2)
+Parameter('KD_Kx_N_div', 1000)
+k_fate('k_N_div', k_N_div_0, k_N_div_x, KD_Kx_N_div, Y_obs)
+Rule('N_div', N() >> N() + N(), k_N_div)
 
 # Parameter('k_nev1_die', 0.9)
-Parameter('k_NEv1_die_0', 0.9)
-Parameter('k_NEv1_die_x', 0.1)
-Parameter('KD_Kx_NEv1_die', 1000)
-k_fate('k_NEv1_die', k_NEv1_die_0, k_NEv1_die_x, KD_Kx_NEv1_die, NonNE_obs)
-Rule('NEv1_die', NEv1() >> None, k_NEv1_die)
+Parameter('k_N_die_0', 0.9)
+Parameter('k_N_die_x', 0.1)
+Parameter('KD_Kx_N_die', 1000)
+k_fate('k_N_die', k_N_die_0, k_N_die_x, KD_Kx_N_die, Y_obs)
+Rule('N_die', N() >> None, k_N_die)
 
 # Parameter('k_nev2_div', 1)
-Parameter('k_NEv2_div_0', 1) # TPCs divide approximately once per day in culture
-Parameter('k_NEv2_div_x', 2)
-Parameter('KD_Kx_NEv2_div', 1000)
-k_fate('k_NEv2_div', k_NEv2_div_0, k_NEv2_div_x, KD_Kx_NEv2_div, NonNE_obs)
-Rule('NEv2_div', NEv2() >> NEv2() + NEv2(), k_NEv2_div)
+Parameter('k_A2_div_0', 1) # TPCs divide approximately once per day in culture
+Parameter('k_A2_div_x', 2)
+Parameter('KD_Kx_A2_div', 1000)
+k_fate('k_A2_div', k_A2_div_0, k_A2_div_x, KD_Kx_A2_div, Y_obs)
+Rule('A2_div', A2() >> A2() + A2(), k_A2_div)
 
 # Parameter('k_nev2_die', 0.9)
-Parameter('k_NEv2_die_0', 0.9)
-Parameter('k_NEv2_die_x', 0.1)
-Parameter('KD_Kx_NEv2_die', 1000)
-k_fate('k_NEv2_die', k_NEv2_die_0, k_NEv2_die_x, KD_Kx_NEv2_die, NonNE_obs)
-Rule('NEv2_die', NEv2() >> None, k_NEv2_die)
+Parameter('k_A2_die_0', 0.9)
+Parameter('k_A2_die_x', 0.1)
+Parameter('KD_Kx_A2_die', 1000)
+k_fate('k_A2_die', k_A2_die_0, k_A2_die_x, KD_Kx_A2_die, Y_obs)
+Rule('A2_die', A2() >> None, k_A2_die)
 
 # Parameter('k_nonNe_div', 0.9)
-Parameter('k_nonNE_div_0', 1.1)
-Parameter('k_nonNE_div_x', 0.9)
-Parameter('KD_Kx_nonNE_div', 1000)
-k_fate('k_nonNE_div', k_nonNE_div_0, k_nonNE_div_x, KD_Kx_nonNE_div, NE_all)
-Rule('NonNE_div', NonNE() >> NonNE() + NonNE(), k_nonNE_div)
+Parameter('k_Y_div_0', 1.1)
+Parameter('k_Y_div_x', 0.9)
+Parameter('KD_Kx_Y_div', 1000)
+k_fate('k_Y_div', k_Y_div_0, k_Y_div_x, KD_Kx_Y_div, NE_all)
+Rule('Y_div', Y() >> Y() + Y(), k_Y_div)
 
-Parameter('k_nonNe_die', 0.1)
-Rule('NonNE_die', NonNE() >> None, k_nonNe_die)
+Parameter('k_Y_die', 0.1)
+Rule('Y_die', Y() >> None, k_Y_die)
 
-Parameter('kf_diff_ne_nev1', 0.1)
+Parameter('kf_diff_ne_nev1', 0.1)  # differentiation
 Parameter('kr_diff_ne_nev1', 0.1)
-Rule('NE_diff_NEv1', NE() | NEv1(), kf_diff_ne_nev1, kr_diff_ne_nev1)
+Rule('A_diff_N', A() | N(), kf_diff_ne_nev1, kr_diff_ne_nev1)   # A can turn into N and vice-versa
 
 Parameter('kf_diff_ne_nev2', 0.1)
 Parameter('kr_diff_ne_nev2', 0.075)
-Rule('NE_diff_NEv2', NE() | NEv2(), kf_diff_ne_nev2, kr_diff_ne_nev2)
+Rule('A_diff_A2', A() | A2(), kf_diff_ne_nev2, kr_diff_ne_nev2)
 
 Parameter('kf_diff_nev1_nev2', 0.1)
 Parameter('kr_diff_nev1_nev2', 0.1)
-Rule('NEv1_diff_NEv2', NEv1() | NEv2(), kf_diff_nev1_nev2, kr_diff_nev1_nev2)
+Rule('N_diff_A2', N() | A2(), kf_diff_nev1_nev2, kr_diff_nev1_nev2)
 
 Parameter('kf_diff_nev1_nonNe', 5) 
-Rule('NEv1_diff_NonNE', NEv1() >> NonNE(), kf_diff_nev1_nonNe)
+Rule('N_diff_Y', N() >> Y(), kf_diff_nev1_nonNe)      # N turns to Y but not Y
 
 tspan = np.linspace(0, 20, 101)
 
-sim = ScipyOdeSimulator(model, verbose=True)
-x = sim.run(tspan)
+sim = ScipyOdeSimulator(model, tspan, verbose=True)
+x = sim.run()
 
 plt.figure()
 for obs in model.observables[:4]:
@@ -108,7 +108,7 @@ plt.legend(loc=0)
 plt.tight_layout()
 
 # cell_tot = np.array([sum(x.observables[i]) for i in range(len(x.observables))])
-cell_tot = sum(x.all[obs.name] for obs in [NE_obs, NEv1_obs, NEv2_obs, NonNE_obs])
+cell_tot = sum(x.all[obs.name] for obs in [A_obs, N_obs, A2_obs, Y_obs])
 
 plt.figure()
 label = [obs.name[:obs.name.find('_')] for obs in model.observables[:4]]

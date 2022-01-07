@@ -75,20 +75,20 @@ Rule('Y_div', Y() >> Y() + Y(), k_Y_div)
 Parameter('k_Y_die', 0.1)
 Rule('Y_die', Y() >> None, k_Y_die)
 
-Parameter('kf_diff_ne_nev1', 0.1)  # differentiation
-Parameter('kr_diff_ne_nev1', 0.1)
-Rule('A_diff_N', A() | N(), kf_diff_ne_nev1, kr_diff_ne_nev1)   # A can turn into N and vice-versa
+Parameter('kf_diff_A_N', 0.1)  # differentiation
+Parameter('kr_diff_A_N', 0.1)
+Rule('A_diff_N', A() | N(), kf_diff_A_N, kr_diff_A_N)   # A can turn into N and vice-versa
 
-Parameter('kf_diff_ne_nev2', 0.1)
-Parameter('kr_diff_ne_nev2', 0.075)
-Rule('A_diff_A2', A() | A2(), kf_diff_ne_nev2, kr_diff_ne_nev2)
+Parameter('kf_diff_A_A2', 0.1)
+Parameter('kr_diff_A_A2', 0.075)
+Rule('A_diff_A2', A() | A2(), kf_diff_A_A2, kr_diff_A_A2)
 
-Parameter('kf_diff_nev1_nev2', 0.1)
-Parameter('kr_diff_nev1_nev2', 0.1)
-Rule('N_diff_A2', N() | A2(), kf_diff_nev1_nev2, kr_diff_nev1_nev2)
+Parameter('kf_diff_N_A2', 0.1)
+Parameter('kr_diff_N_A2', 0.1)
+Rule('N_diff_A2', N() | A2(), kf_diff_N_A2, kr_diff_N_A2)
 
-Parameter('kf_diff_nev1_nonNe', 5) 
-Rule('N_diff_Y', N() >> Y(), kf_diff_nev1_nonNe)      # N turns to Y but not Y
+Parameter('kf_diff_N_Y', 5)
+Rule('N_diff_Y', N() >> Y(), kf_diff_N_Y)      # N turns to Y but Y does not turn to N
 
 tspan = np.linspace(0, 20, 101)
 

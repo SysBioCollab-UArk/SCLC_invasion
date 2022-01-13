@@ -7,34 +7,34 @@ import matplotlib.pyplot as plt
 def k_fate(ename, k_fate_0, k_fate_x, KD_Kx_fate, effector_cell_obs):
     return Expression(ename, (k_fate_0*KD_Kx_fate + k_fate_x*effector_cell_obs) / (KD_Kx_fate + effector_cell_obs))
 
-##### NE #####
+##### NE ##### (A)
 
-k_NE_div_0 = [1.0, 1.0] # [epithelium, stroma] # TPCs divide approximately once per day in culture
+k_NE_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_NE_div_x = [2.0, 2.0]
 KD_Kx_NE_div = [1000.0, 1000.0]
 k_NE_die_0 = [0.9, 0.9]
 k_NE_die_x = [0.1, 0.1]
 KD_Kx_NE_die = [1000.0, 1000.0]
 
-##### NEv1 #####
+##### NEv1 ##### (N)
 
-k_NEv1_div_0 = [1.0, 1.0] # [epithelium, stroma] # TPCs divide approximately once per day in culture
+k_NEv1_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_NEv1_div_x = [2.0, 2.0]
 KD_Kx_NEv1_div = [1000.0, 1000.0]
 k_NEv1_die_0 = [0.9, 0.9]
 k_NEv1_die_x = [0.1, 0.1]
 KD_Kx_NEv1_die = [1000.0, 1000.0]
 
-##### NEv2 #####
+##### NEv2 ##### (A2)
 
-k_NEv2_div_0 = [1.0, 1.0] # [epithelium, stroma] # TPCs divide approximately once per day in culture
+k_NEv2_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_NEv2_div_x = [2.0, 2.0]
 KD_Kx_NEv2_div = [1000.0, 1000.0]
 k_NEv2_die_0 = [0.9, 0.9]
 k_NEv2_die_x = [0.1, 0.1]
 KD_Kx_NEv2_die = [1000.0, 1000.0]
 
-##### nonNE #####
+##### nonNE ##### (Y)
 
 k_nonNE_div_0 = [1.1, 1.1]  # [epithelium, stroma]
 k_nonNE_div_x = [0.9, 0.9]
@@ -73,8 +73,8 @@ Monomer('NEv1')
 Monomer('NEv2')
 Monomer('NonNE')
 
-Compartment('E', parent=None, dimension=3) # epithelium
-Compartment('S', parent=None, dimension=3) # stroma
+Compartment('E', parent=None, dimension=3)  # epithelium
+Compartment('S', parent=None, dimension=3)  # stroma
 
 Parameter('NE_init_E', 100)
 Initial(NE()**E, NE_init_E)

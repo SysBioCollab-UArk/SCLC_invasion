@@ -167,15 +167,20 @@ Observable('NE_all_TOT', A()+N()+A2())
 
 ## Invasion (epithelium to stroma, one-way)
 
-Parameter('k_A_epi_to_stroma', 0.5)
-Parameter('k_N_epi_to_stroma', 0.5)
-Parameter('k_A2_epi_to_stroma', 0.5)
-Parameter('k_Y_epi_to_stroma', 0.5)
+Parameter('kf_A_epi_to_stroma', 0.5)
+Parameter('kf_N_epi_to_stroma', 0.5)
+Parameter('kf_A2_epi_to_stroma', 0.5)
+Parameter('kf_Y_epi_to_stroma', 0.5)
 
-Rule('A_epi_to_stroma', A()**E >> A()**S, k_A_epi_to_stroma)
-Rule('N_epi_to_stroma', N()**E >> N()**S, k_N_epi_to_stroma)
-Rule('A2_epi_to_stroma', A2()**E >> A2()**S, k_A2_epi_to_stroma)
-Rule('Y_epi_to_stroma', Y()**E >> Y()**S, k_Y_epi_to_stroma)
+Parameter('kr_A_epi_to_stroma', 0)
+Parameter('kr_N_epi_to_stroma', 0)
+Parameter('kr_A2_epi_to_stroma', 0)
+Parameter('kr_Y_epi_to_stroma', 0)
+
+Rule('A_epi_to_stroma', A()**E | A()**S, kf_A_epi_to_stroma, kr_A_epi_to_stroma)
+Rule('N_epi_to_stroma', N()**E | N()**S, kf_N_epi_to_stroma, kr_N_epi_to_stroma)
+Rule('A2_epi_to_stroma', A2()**E | A2()**S, kf_A2_epi_to_stroma, kr_A2_epi_to_stroma)
+Rule('Y_epi_to_stroma', Y()**E | Y()**S, kf_Y_epi_to_stroma, kr_Y_epi_to_stroma)
 
 tspan = np.linspace(0, 20, 101)
 

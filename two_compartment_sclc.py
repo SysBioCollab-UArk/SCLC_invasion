@@ -171,6 +171,8 @@ CC = 10000
 # [Rule('A2_cc_%s' % C.name, A2()**C + A2()**C >> A2()**C, par['k_A2_cc_%s' % C.name]) for C in cmp]
 # [Rule('Y_cc_%s' % C.name, Y()**C + Y()**C >> Y()**C, par['k_Y_cc_%s' % C.name]) for C in cmp]
 
+# TODO: Create one rule per compartment, use expressions to define carrying capacity in terms of total number of cells,
+# TODO: ...deal with divide by zero problem in defining the expressions
 Parameter('k_A_cc', (k_A_div_0_E.value - k_A_die_0_E.value)/CC)
 Parameter('k_N_cc', (k_N_div_0_E.value - k_N_die_0_E.value)/CC)
 Parameter('k_A2_cc', (k_A2_div_0_E.value - k_A2_die_0_E.value)/CC)

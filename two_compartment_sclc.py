@@ -3,6 +3,7 @@ from pysb.simulator import ScipyOdeSimulator
 from pysb.simulator import BngSimulator
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy import Piecewise
 
 def k_fate(ename, k_fate_0, k_fate_x, KD_Kx_fate, effector_cell_obs):
     return Expression(ename, (k_fate_0*KD_Kx_fate + k_fate_x*effector_cell_obs) / (KD_Kx_fate + effector_cell_obs))
@@ -177,14 +178,17 @@ Parameter('k_A_cc', (k_A_div_0_E.value - k_A_die_0_E.value)/CC)
 Parameter('k_N_cc', (k_N_div_0_E.value - k_N_die_0_E.value)/CC)
 Parameter('k_A2_cc', (k_A2_div_0_E.value - k_A2_die_0_E.value)/CC)
 Parameter('k_Y_cc', (k_Y_div_0_E.value - k_Y_die_E.value)/CC)
-Expression('rate_A_cc', k_A_CC*(Cells_TOT/A_obs_TOT)**2)  # deal with divide-by-zero
-Expression('rate_N_cc', k_N_CC*(Cells_TOT/N_obs_TOT)**2)
-Expression('rate_A2_cc', k_A2_CC*(Cells_TOT/A2_obs_TOT)**2)
-Expression('rate_Y_cc', k_Y_CC*(Cells_TOT/Y_obs_TOT)**2)
-Rule('A_cc', A() + A() >> A(), k_A_cc)  # rate = k_A_cc*[A]^2 * [Cell_TOT]^2/[A]^2 = k_A_cc*[Cell_TOT]^2
-Rule('N_cc', N() + N() >> N(), k_A_cc) # rate = k_N_cc*[A]^2 * [Cell_TOT]^2/[A]^2 = k_A_cc*[Cell_TOT]^2
-Rule('A2_cc', A2() + A2() >> A2(), k_A_cc)
-Rule('Y_cc', Y() + Y() >> Y(), k_A_cc)
+
+# TODO: Trying to solve the divide-by-zero problem here. Not working yet.
+Expression('rate_A_cc', Piecewise((0, A_obs_TOT == 0), (k_A_cc*Cells_TOT/A_obs_TOT, True)))
+Expression('rate_N_cc', Piecewise((0, N_obs_TOT == 0), (k_N_cc*Cells_TOT/N_obs_TOT, True)))
+Expression('rate_A2_cc', Piecewise((0, A2_obs_TOT == 0), (k_A2_cc*Cells_TOT/A2_obs_TOT, True)))
+Expression('rate_Y_cc', Piecewise((0, Y_obs_TOT == 0), (k_Y_cc*Cells_TOT/Y_obs_TOT, True)))
+
+Rule('A_cc', A() + A() >> A(), rate_A_cc)  # rate = k_A_cc*[A]^2 * [Cell_TOT]^2/[A]^2 = k_A_cc*[Cell_TOT]^2
+Rule('N_cc', N() + N() >> N(), rate_N_cc)
+Rule('A2_cc', A2() + A2() >> A2(), rate_A2_cc)
+Rule('Y_cc', Y() + Y() >> Y(), rate_Y_cc)
 
 ##### Differentiation (state transitions) #####
 

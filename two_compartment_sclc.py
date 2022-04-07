@@ -80,8 +80,24 @@ Compartment('S', parent=None, dimension=3)  # stroma
 Parameter('A_init_E', 100)
 Initial(A()**E, A_init_E)
 
-Parameter('A_init_S', 0)
+Parameter('A_init_S', 100)  # 0
 Initial(A()**S, A_init_S)
+
+#####
+Parameter('N_init_E', 100)
+Parameter('A2_init_E', 100)
+Parameter('Y_init_E', 100)
+Parameter('N_init_S', 100)
+Parameter('A2_init_S', 100)
+Parameter('Y_init_S', 100)
+
+Initial(N()**E, N_init_E)
+Initial(A2()**E, A2_init_E)
+Initial(Y()**E, Y_init_E)
+Initial(N()**S, N_init_S)
+Initial(A2()**S, A2_init_S)
+Initial(Y()**S, Y_init_S)
+#####
 
 Observable('A_obs_TOT', A())
 Observable('N_obs_TOT', N())
@@ -101,6 +117,7 @@ Observable('Cells_TOT', A()+N()+A2()+Y())
 [Parameter('k_A_div_0_%s' % C.name, k_A_div_0[i]) for i,C in enumerate(cmp)]
 [Parameter('k_A_div_x_%s' % C.name, k_A_div_x[i]) for i,C in enumerate(cmp)]
 [Parameter('KD_Kx_A_div_%s' % C.name, KD_Kx_A_div[i]) for i,C in enumerate(cmp)]
+# TODO: change k_A_div_C expression names to rate_A_div_C
 [k_fate('k_A_div_%s' % C.name, par['k_A_div_0_%s' % C.name], par['k_A_div_x_%s' % C.name],
         par['KD_Kx_A_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
 [Rule('A_div_%s' % C.name, A()**C >> A()**C + A()**C, exp['k_A_div_%s' % C.name]) for i,C in enumerate(cmp)]
@@ -158,37 +175,50 @@ Observable('Cells_TOT', A()+N()+A2()+Y())
 
 # Carrying capacity for all cell types
 CC = 10000
-# [Parameter('k_A_cc_%s' % C.name, (par['k_A_div_0_%s' % C.name].value - par['k_A_die_0_%s' % C.name].value)/CC)
-#  for i,C in enumerate(cmp)]
-# [Parameter('k_N_cc_%s' % C.name, (par['k_N_div_0_%s' % C.name].value - par['k_N_die_0_%s' % C.name].value)/CC)
-#  for i,C in enumerate(cmp)]
-# [Parameter('k_A2_cc_%s' % C.name, (par['k_A2_div_0_%s' % C.name].value - par['k_A2_die_0_%s' % C.name].value)/CC)
-#  for i,C in enumerate(cmp)]
-# [Parameter('k_Y_cc_%s' % C.name, (par['k_Y_div_0_%s' % C.name].value - par['k_Y_die_%s' % C.name].value)/CC)
-#  for i,C in enumerate(cmp)]
 
-# [Rule('A_cc_%s' % C.name, A()**C + A()**C >> A()**C, par['k_A_cc_%s' % C.name]) for C in cmp]
-# [Rule('N_cc_%s' % C.name, N()**C + N()**C >> N()**C, par['k_N_cc_%s' % C.name]) for C in cmp]
-# [Rule('A2_cc_%s' % C.name, A2()**C + A2()**C >> A2()**C, par['k_A2_cc_%s' % C.name]) for C in cmp]
-# [Rule('Y_cc_%s' % C.name, Y()**C + Y()**C >> Y()**C, par['k_Y_cc_%s' % C.name]) for C in cmp]
+# TODO: Replace k_A_div_0 parameter with rate_A_div expression (to get correct upper limit for total cell count)
+[Parameter('k_A_cc_%s' % C.name, (par['k_A_div_0_%s' % C.name].value - par['k_A_die_0_%s' % C.name].value)/CC)
+ for i, C in enumerate(cmp)]
+[Parameter('k_N_cc_%s' % C.name, (par['k_N_div_0_%s' % C.name].value - par['k_N_die_0_%s' % C.name].value)/CC)
+ for i, C in enumerate(cmp)]
+[Parameter('k_A2_cc_%s' % C.name, (par['k_A2_div_0_%s' % C.name].value - par['k_A2_die_0_%s' % C.name].value)/CC)
+ for i, C in enumerate(cmp)]
+[Parameter('k_Y_cc_%s' % C.name, (par['k_Y_div_0_%s' % C.name].value - par['k_Y_die_%s' % C.name].value)/CC)
+ for i, C in enumerate(cmp)]
+
+# TODO: Trying to solve the divide-by-zero problem here. Not working yet.
+[Expression('rate_A_cc_%s' % C.name, Piecewise((0, obs['A_obs_%s' % C.name] == 0),
+                                               (par['k_A_cc_%s' % C.name]*Cells_TOT/obs['A_obs_%s' % C.name], True)))
+ for i, C in enumerate(cmp)]
+[Expression('rate_N_cc_%s' % C.name, Piecewise((0, obs['N_obs_%s' % C.name] == 0),
+                                               (par['k_N_cc_%s' % C.name]*Cells_TOT/obs['N_obs_%s' % C.name], True)))
+ for i, C in enumerate(cmp)]
+[Expression('rate_A2_cc_%s' % C.name, Piecewise((0, obs['A2_obs_%s' % C.name] == 0),
+                                                (par['k_A2_cc_%s' % C.name]*Cells_TOT/obs['A2_obs_%s' % C.name], True)))
+ for i, C in enumerate(cmp)]
+[Expression('rate_Y_cc_%s' % C.name, Piecewise((0, obs['Y_obs_%s' % C.name] == 0),
+                                               (par['k_Y_cc_%s' % C.name]*Cells_TOT/obs['Y_obs_%s' % C.name], True)))
+ for i, C in enumerate(cmp)]
+
+[Rule('A_cc_%s' % C.name, A()**C + A()**C >> A()**C, exp['rate_A_cc_%s' % C.name]) for C in cmp]
+[Rule('N_cc_%s' % C.name, N()**C + N()**C >> N()**C, exp['rate_N_cc_%s' % C.name]) for C in cmp]
+[Rule('A2_cc_%s' % C.name, A2()**C + A2()**C >> A2()**C, exp['rate_A2_cc_%s' % C.name]) for C in cmp]
+[Rule('Y_cc_%s' % C.name, Y()**C + Y()**C >> Y()**C, exp['rate_Y_cc_%s' % C.name]) for C in cmp]
+
+print(model.rules)
+quit()
 
 # TODO: Create one rule per compartment, use expressions to define carrying capacity in terms of total number of cells,
 # TODO: ...deal with divide by zero problem in defining the expressions
-Parameter('k_A_cc', (k_A_div_0_E.value - k_A_die_0_E.value)/CC)
-Parameter('k_N_cc', (k_N_div_0_E.value - k_N_die_0_E.value)/CC)
-Parameter('k_A2_cc', (k_A2_div_0_E.value - k_A2_die_0_E.value)/CC)
-Parameter('k_Y_cc', (k_Y_div_0_E.value - k_Y_die_E.value)/CC)
+# Parameter('k_A_cc', (k_A_div_0_E.value - k_A_die_0_E.value)/CC)
+# Parameter('k_N_cc', (k_N_div_0_E.value - k_N_die_0_E.value)/CC)
+# Parameter('k_A2_cc', (k_A2_div_0_E.value - k_A2_die_0_E.value)/CC)
+# Parameter('k_Y_cc', (k_Y_div_0_E.value - k_Y_die_E.value)/CC)
 
-# TODO: Trying to solve the divide-by-zero problem here. Not working yet.
-Expression('rate_A_cc', Piecewise((0, A_obs_TOT == 0), (k_A_cc*Cells_TOT/A_obs_TOT, True)))
-Expression('rate_N_cc', Piecewise((0, N_obs_TOT == 0), (k_N_cc*Cells_TOT/N_obs_TOT, True)))
-Expression('rate_A2_cc', Piecewise((0, A2_obs_TOT == 0), (k_A2_cc*Cells_TOT/A2_obs_TOT, True)))
-Expression('rate_Y_cc', Piecewise((0, Y_obs_TOT == 0), (k_Y_cc*Cells_TOT/Y_obs_TOT, True)))
-
-Rule('A_cc', A() + A() >> A(), rate_A_cc)  # rate = k_A_cc*[A]^2 * [Cell_TOT]^2/[A]^2 = k_A_cc*[Cell_TOT]^2
-Rule('N_cc', N() + N() >> N(), rate_N_cc)
-Rule('A2_cc', A2() + A2() >> A2(), rate_A2_cc)
-Rule('Y_cc', Y() + Y() >> Y(), rate_Y_cc)
+# Rule('A_cc', A() + A() >> A(), rate_A_cc)  # rate = k_A_cc*[A]^2 * [Cell_TOT]^2/[A]^2 = k_A_cc*[Cell_TOT]^2
+# Rule('N_cc', N() + N() >> N(), rate_N_cc)
+# Rule('A2_cc', A2() + A2() >> A2(), rate_A2_cc)
+# Rule('Y_cc', Y() + Y() >> Y(), rate_Y_cc)
 
 ##### Differentiation (state transitions) #####
 

@@ -84,12 +84,12 @@ Parameter('A_init_S', 100)  # 0
 Initial(A()**S, A_init_S)
 
 #####
-Parameter('N_init_E', 100)
-Parameter('A2_init_E', 100)
-Parameter('Y_init_E', 100)
-Parameter('N_init_S', 100)
-Parameter('A2_init_S', 100)
-Parameter('Y_init_S', 100)
+Parameter('N_init_E', 0)
+Parameter('A2_init_E', 0)
+Parameter('Y_init_E', 0)
+Parameter('N_init_S', 0)
+Parameter('A2_init_S', 0)
+Parameter('Y_init_S', 0)
 
 Initial(N()**E, N_init_E)
 Initial(A2()**E, A2_init_E)
@@ -111,6 +111,7 @@ Observable('Cells_TOT', A()+N()+A2()+Y())
 [Observable('A2_obs_%s' % C.name, A2()**C) for C in cmp]
 [Observable('Y_obs_%s' % C.name, Y()**C) for C in cmp]
 [Observable('NE_all_%s' % C.name, A()**C+N()**C+A2()**C) for C in cmp]
+[Observable('Cells_%s' % C.name, A()**C+N()**C+A2()**C+Y()**C) for C in cmp]
 
 ##### A div and death #####
 
@@ -184,19 +185,19 @@ CC = 1e6
 [Expression('k_Y_cc_%s' % C.name, (exp['k_Y_div_%s' % C.name] - par['k_Y_die_%s' % C.name])/CC)
  for i, C in enumerate(cmp)]
 
-# TODO: Divide-by-zero is still a problem
-[Expression('rate_A_cc_%s' % C.name, Piecewise((0, obs['A_obs_%s' % C.name] == 0),
+# TODO: Report that in the Piecewise functions below, <= works but == doesn't
+[Expression('rate_A_cc_%s' % C.name, Piecewise((0, obs['A_obs_%s' % C.name] <= 0),
                                                (exp['k_A_cc_%s' % C.name]*Cells_TOT/obs['A_obs_%s' % C.name], True)))
- for i, C in enumerate(cmp)]
-[Expression('rate_N_cc_%s' % C.name, Piecewise((0, obs['N_obs_%s' % C.name] == 0),
+                                               for i, C in enumerate(cmp)]
+[Expression('rate_N_cc_%s' % C.name, Piecewise((0, obs['N_obs_%s' % C.name] <= 0),
                                                (exp['k_N_cc_%s' % C.name]*Cells_TOT/obs['N_obs_%s' % C.name], True)))
- for i, C in enumerate(cmp)]
-[Expression('rate_A2_cc_%s' % C.name, Piecewise((0, obs['A2_obs_%s' % C.name] == 0),
+                                               for i, C in enumerate(cmp)]
+[Expression('rate_A2_cc_%s' % C.name, Piecewise((0, obs['A2_obs_%s' % C.name] <= 0),
                                                 (exp['k_A2_cc_%s' % C.name]*Cells_TOT/obs['A2_obs_%s' % C.name], True)))
- for i, C in enumerate(cmp)]
-[Expression('rate_Y_cc_%s' % C.name, Piecewise((0, obs['Y_obs_%s' % C.name] == 0),
+                                                for i, C in enumerate(cmp)]
+[Expression('rate_Y_cc_%s' % C.name, Piecewise((0, obs['Y_obs_%s' % C.name] <= 0),
                                                (exp['k_Y_cc_%s' % C.name]*Cells_TOT/obs['Y_obs_%s' % C.name], True)))
- for i, C in enumerate(cmp)]
+                                               for i, C in enumerate(cmp)]
 
 [Rule('A_cc_%s' % C.name, A()**C + A()**C >> A()**C, exp['rate_A_cc_%s' % C.name]) for C in cmp]
 [Rule('N_cc_%s' % C.name, N()**C + N()**C >> N()**C, exp['rate_N_cc_%s' % C.name]) for C in cmp]
@@ -247,32 +248,24 @@ x = sim.run(tspan)
 
 for C_name in [c.name for c in cmp] + ['TOT']:
 
-    #####
-    # Plot total number of cells (to confirm carrying capacity is working)
-    plt.figure()
-    plt.plot(tspan, x.observables['Cells_TOT'])
-    plt.xlabel('time (d)', fontsize=16)
-    plt.ylabel('cell count', fontsize=16)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-    plt.legend(loc=0)
-    plt.tight_layout()
-    #####
-
-    obs_name = ['A_obs_%s' % C_name, 'N_obs_%s' % C_name, 'A2_obs_%s' % C_name, 'Y_obs_%s' % C_name]
+    obs_name = ['A_obs_%s' % C_name,
+                'N_obs_%s' % C_name,
+                'A2_obs_%s' % C_name,
+                'Y_obs_%s' % C_name]
 
     plt.figure()
     label = []
     for name in obs_name:
         label.append(name[:name.find('_')])
         if C_name == 'E':
-            label[-1] += '_epith' 
+            suffix = '_epith'
         elif C_name == 'S':
-            label[-1] += '_stroma'
+            suffix = '_stroma'
         else:
-            label[-1] += '_total'
+            suffix = '_total'
+        label[-1] += suffix
         plt.plot(tspan, x.all[name], lw=3, label=label[-1])
+    plt.plot(tspan, x.all['Cells_%s' % C_name], 'k--', lw=3, label='Cells%s' % suffix)
     plt.xlabel('time (d)', fontsize=16)
     plt.ylabel('cell count', fontsize=16)
     plt.xticks(fontsize=14)

@@ -117,7 +117,6 @@ Observable('Cells_TOT', A()+N()+A2()+Y())
 [Parameter('k_A_div_0_%s' % C.name, k_A_div_0[i]) for i,C in enumerate(cmp)]
 [Parameter('k_A_div_x_%s' % C.name, k_A_div_x[i]) for i,C in enumerate(cmp)]
 [Parameter('KD_Kx_A_div_%s' % C.name, KD_Kx_A_div[i]) for i,C in enumerate(cmp)]
-# TODO: change k_A_div_C expression names to rate_A_div_C
 [k_fate('k_A_div_%s' % C.name, par['k_A_div_0_%s' % C.name], par['k_A_div_x_%s' % C.name],
         par['KD_Kx_A_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
 [Rule('A_div_%s' % C.name, A()**C >> A()**C + A()**C, exp['k_A_div_%s' % C.name]) for i,C in enumerate(cmp)]
@@ -173,52 +172,36 @@ Observable('Cells_TOT', A()+N()+A2()+Y())
 [Parameter('k_Y_die_%s' % C.name, k_Y_die[i]) for i,C in enumerate(cmp)]
 [Rule('Y_die_%s' % C.name, Y()**C >> None, par['k_Y_die_%s' % C.name]) for i,C in enumerate(cmp)]
 
-# Carrying capacity for all cell types
-CC = 10000
+# Carrying capacity for total cell count
+CC = 1e6
 
-# TODO: Replace k_A_div_0 parameter with rate_A_div expression (to get correct upper limit for total cell count)
-[Parameter('k_A_cc_%s' % C.name, (par['k_A_div_0_%s' % C.name].value - par['k_A_die_0_%s' % C.name].value)/CC)
+[Expression('k_A_cc_%s' % C.name, (exp['k_A_div_%s' % C.name] - exp['k_A_die_%s' % C.name])/CC)
  for i, C in enumerate(cmp)]
-[Parameter('k_N_cc_%s' % C.name, (par['k_N_div_0_%s' % C.name].value - par['k_N_die_0_%s' % C.name].value)/CC)
+[Expression('k_N_cc_%s' % C.name, (exp['k_N_div_%s' % C.name] - exp['k_N_die_%s' % C.name])/CC)
  for i, C in enumerate(cmp)]
-[Parameter('k_A2_cc_%s' % C.name, (par['k_A2_div_0_%s' % C.name].value - par['k_A2_die_0_%s' % C.name].value)/CC)
+[Expression('k_A2_cc_%s' % C.name, (exp['k_A2_div_%s' % C.name] - exp['k_A2_die_%s' % C.name])/CC)
  for i, C in enumerate(cmp)]
-[Parameter('k_Y_cc_%s' % C.name, (par['k_Y_div_0_%s' % C.name].value - par['k_Y_die_%s' % C.name].value)/CC)
+[Expression('k_Y_cc_%s' % C.name, (exp['k_Y_div_%s' % C.name] - par['k_Y_die_%s' % C.name])/CC)
  for i, C in enumerate(cmp)]
 
-# TODO: Trying to solve the divide-by-zero problem here. Not working yet.
+# TODO: Divide-by-zero is still a problem
 [Expression('rate_A_cc_%s' % C.name, Piecewise((0, obs['A_obs_%s' % C.name] == 0),
-                                               (par['k_A_cc_%s' % C.name]*Cells_TOT/obs['A_obs_%s' % C.name], True)))
+                                               (exp['k_A_cc_%s' % C.name]*Cells_TOT/obs['A_obs_%s' % C.name], True)))
  for i, C in enumerate(cmp)]
 [Expression('rate_N_cc_%s' % C.name, Piecewise((0, obs['N_obs_%s' % C.name] == 0),
-                                               (par['k_N_cc_%s' % C.name]*Cells_TOT/obs['N_obs_%s' % C.name], True)))
+                                               (exp['k_N_cc_%s' % C.name]*Cells_TOT/obs['N_obs_%s' % C.name], True)))
  for i, C in enumerate(cmp)]
 [Expression('rate_A2_cc_%s' % C.name, Piecewise((0, obs['A2_obs_%s' % C.name] == 0),
-                                                (par['k_A2_cc_%s' % C.name]*Cells_TOT/obs['A2_obs_%s' % C.name], True)))
+                                                (exp['k_A2_cc_%s' % C.name]*Cells_TOT/obs['A2_obs_%s' % C.name], True)))
  for i, C in enumerate(cmp)]
 [Expression('rate_Y_cc_%s' % C.name, Piecewise((0, obs['Y_obs_%s' % C.name] == 0),
-                                               (par['k_Y_cc_%s' % C.name]*Cells_TOT/obs['Y_obs_%s' % C.name], True)))
+                                               (exp['k_Y_cc_%s' % C.name]*Cells_TOT/obs['Y_obs_%s' % C.name], True)))
  for i, C in enumerate(cmp)]
 
 [Rule('A_cc_%s' % C.name, A()**C + A()**C >> A()**C, exp['rate_A_cc_%s' % C.name]) for C in cmp]
 [Rule('N_cc_%s' % C.name, N()**C + N()**C >> N()**C, exp['rate_N_cc_%s' % C.name]) for C in cmp]
 [Rule('A2_cc_%s' % C.name, A2()**C + A2()**C >> A2()**C, exp['rate_A2_cc_%s' % C.name]) for C in cmp]
 [Rule('Y_cc_%s' % C.name, Y()**C + Y()**C >> Y()**C, exp['rate_Y_cc_%s' % C.name]) for C in cmp]
-
-print(model.rules)
-quit()
-
-# TODO: Create one rule per compartment, use expressions to define carrying capacity in terms of total number of cells,
-# TODO: ...deal with divide by zero problem in defining the expressions
-# Parameter('k_A_cc', (k_A_div_0_E.value - k_A_die_0_E.value)/CC)
-# Parameter('k_N_cc', (k_N_div_0_E.value - k_N_die_0_E.value)/CC)
-# Parameter('k_A2_cc', (k_A2_div_0_E.value - k_A2_die_0_E.value)/CC)
-# Parameter('k_Y_cc', (k_Y_div_0_E.value - k_Y_die_E.value)/CC)
-
-# Rule('A_cc', A() + A() >> A(), rate_A_cc)  # rate = k_A_cc*[A]^2 * [Cell_TOT]^2/[A]^2 = k_A_cc*[Cell_TOT]^2
-# Rule('N_cc', N() + N() >> N(), rate_N_cc)
-# Rule('A2_cc', A2() + A2() >> A2(), rate_A2_cc)
-# Rule('Y_cc', Y() + Y() >> Y(), rate_Y_cc)
 
 ##### Differentiation (state transitions) #####
 
@@ -263,7 +246,20 @@ sim = ScipyOdeSimulator(model, verbose=True)
 x = sim.run(tspan)
 
 for C_name in [c.name for c in cmp] + ['TOT']:
-    
+
+    #####
+    # Plot total number of cells (to confirm carrying capacity is working)
+    plt.figure()
+    plt.plot(tspan, x.observables['Cells_TOT'])
+    plt.xlabel('time (d)', fontsize=16)
+    plt.ylabel('cell count', fontsize=16)
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    plt.legend(loc=0)
+    plt.tight_layout()
+    #####
+
     obs_name = ['A_obs_%s' % C_name, 'N_obs_%s' % C_name, 'A2_obs_%s' % C_name, 'Y_obs_%s' % C_name]
 
     plt.figure()
@@ -302,7 +298,3 @@ for C_name in [c.name for c in cmp] + ['TOT']:
     plt.tight_layout()
 
 plt.show()
-    
-
-
-

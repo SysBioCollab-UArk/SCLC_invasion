@@ -5,10 +5,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sympy import Piecewise
 
-def k_fate(ename, k_fate_0, k_fate_x, KD_Kx_fate, effector_cell_obs):
-    return Expression(ename, (k_fate_0*KD_Kx_fate + k_fate_x*effector_cell_obs) / (KD_Kx_fate + effector_cell_obs))
 
-##### A #####
+def k_fate(ename, k_fate_0, k_fate_x, kd_kx_fate, effector_cell_obs):
+    return Expression(ename, (k_fate_0*kd_kx_fate + k_fate_x*effector_cell_obs) / (kd_kx_fate + effector_cell_obs))
+
+
+# #### A #####
 
 k_A_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_A_div_x = [2.0, 2.0]
@@ -17,7 +19,7 @@ k_A_die_0 = [0.9, 0.9]
 k_A_die_x = [0.1, 0.1]
 KD_Kx_A_die = [1000.0, 1000.0]
 
-##### N #####
+# #### N #####
 
 k_N_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_N_div_x = [2.0, 2.0]
@@ -26,7 +28,7 @@ k_N_die_0 = [0.9, 0.9]
 k_N_die_x = [0.1, 0.1]
 KD_Kx_N_die = [1000.0, 1000.0]
 
-##### A2 #####
+# #### A2 #####
 
 k_A2_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
 k_A2_div_x = [2.0, 2.0]
@@ -35,31 +37,31 @@ k_A2_die_0 = [0.9, 0.9]
 k_A2_die_x = [0.1, 0.1]
 KD_Kx_A2_die = [1000.0, 1000.0]
 
-##### Y #####
+# #### Y #####
 
 k_Y_div_0 = [1.1, 1.1]  # [epithelium, stroma]
 k_Y_div_x = [0.9, 0.9]
 KD_Kx_Y_div = [1000.0, 1000.0]
 k_Y_die = [0.1, 0.1]
 
-##### A <> N #####
+# #### A <> N #####
 
 kf_diff_A_N = [0.1, 0.1]  # [epithelium, stroma]
 kr_diff_A_N = [0.1, 0.1]
 
-##### A <> A2 #####
+# #### A <> A2 #####
 
-kf_diff_A_A2 = [0.1, 0.1] # [epithelium, stroma]
+kf_diff_A_A2 = [0.1, 0.1]  # [epithelium, stroma]
 kr_diff_A_A2 = [0.075, 0.075]
 
-##### N <> A2 #####
+# #### N <> A2 #####
 
-kf_diff_N_A2 = [0.1, 0.1] # [epithelium, stroma]
+kf_diff_N_A2 = [0.1, 0.1]  # [epithelium, stroma]
 kr_diff_N_A2 = [0.1, 0.1]
 
-##### N >> Y #####
+# #### N >> Y #####
 
-kf_diff_N_Y = [5.0, 5.0] # [epithelium, stroma]
+kf_diff_N_Y = [5.0, 5.0]  # [epithelium, stroma]
 
 Model()
 
@@ -80,7 +82,7 @@ Compartment('S', parent=None, dimension=3)  # stroma
 Parameter('A_init_E', 100)
 Initial(A()**E, A_init_E)
 
-Parameter('A_init_S', 100)  # 0
+Parameter('A_init_S', 0)
 Initial(A()**S, A_init_S)
 
 #####
@@ -113,65 +115,65 @@ Observable('Cells_TOT', A()+N()+A2()+Y())
 [Observable('NE_all_%s' % C.name, A()**C+N()**C+A2()**C) for C in cmp]
 [Observable('Cells_%s' % C.name, A()**C+N()**C+A2()**C+Y()**C) for C in cmp]
 
-##### A div and death #####
+# #### A div and death #####
 
-[Parameter('k_A_div_0_%s' % C.name, k_A_div_0[i]) for i,C in enumerate(cmp)]
-[Parameter('k_A_div_x_%s' % C.name, k_A_div_x[i]) for i,C in enumerate(cmp)]
-[Parameter('KD_Kx_A_div_%s' % C.name, KD_Kx_A_div[i]) for i,C in enumerate(cmp)]
+[Parameter('k_A_div_0_%s' % C.name, k_A_div_0[i]) for i, C in enumerate(cmp)]
+[Parameter('k_A_div_x_%s' % C.name, k_A_div_x[i]) for i, C in enumerate(cmp)]
+[Parameter('KD_Kx_A_div_%s' % C.name, KD_Kx_A_div[i]) for i, C in enumerate(cmp)]
 [k_fate('k_A_div_%s' % C.name, par['k_A_div_0_%s' % C.name], par['k_A_div_x_%s' % C.name],
-        par['KD_Kx_A_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
-[Rule('A_div_%s' % C.name, A()**C >> A()**C + A()**C, exp['k_A_div_%s' % C.name]) for i,C in enumerate(cmp)]
+        par['KD_Kx_A_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i, C in enumerate(cmp)]
+[Rule('A_div_%s' % C.name, A()**C >> A()**C + A()**C, exp['k_A_div_%s' % C.name]) for i, C in enumerate(cmp)]
 
-[Parameter('k_A_die_0_%s' % C.name, k_A_die_0[i]) for i,C in enumerate(cmp)]
-[Parameter('k_A_die_x_%s' % C.name, k_A_die_x[i]) for i,C in enumerate(cmp)]
-[Parameter('KD_Kx_A_die_%s' % C.name, KD_Kx_A_die[i]) for i,C in enumerate(cmp)]
+[Parameter('k_A_die_0_%s' % C.name, k_A_die_0[i]) for i, C in enumerate(cmp)]
+[Parameter('k_A_die_x_%s' % C.name, k_A_die_x[i]) for i, C in enumerate(cmp)]
+[Parameter('KD_Kx_A_die_%s' % C.name, KD_Kx_A_die[i]) for i, C in enumerate(cmp)]
 [k_fate('k_A_die_%s' % C.name, par['k_A_die_0_%s' % C.name], par['k_A_die_x_%s' % C.name],
-        par['KD_Kx_A_die_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
-[Rule('A_die_%s' % C.name, A()**C >> None, exp['k_A_die_%s' % C.name]) for i,C in enumerate(cmp)]
+        par['KD_Kx_A_die_%s' % C.name], obs['Y_obs_%s' % C.name]) for i, C in enumerate(cmp)]
+[Rule('A_die_%s' % C.name, A()**C >> None, exp['k_A_die_%s' % C.name]) for i, C in enumerate(cmp)]
 
-##### N div and death #####
+# #### N div and death #####
 
-[Parameter('k_N_div_0_%s' % C.name, k_N_div_0[i]) for i,C in enumerate(cmp)]
-[Parameter('k_N_div_x_%s' % C.name, k_N_div_x[i]) for i,C in enumerate(cmp)]
-[Parameter('KD_Kx_N_div_%s' % C.name, KD_Kx_N_div[i]) for i,C in enumerate(cmp)]
+[Parameter('k_N_div_0_%s' % C.name, k_N_div_0[i]) for i, C in enumerate(cmp)]
+[Parameter('k_N_div_x_%s' % C.name, k_N_div_x[i]) for i, C in enumerate(cmp)]
+[Parameter('KD_Kx_N_div_%s' % C.name, KD_Kx_N_div[i]) for i, C in enumerate(cmp)]
 [k_fate('k_N_div_%s' % C.name, par['k_N_div_0_%s' % C.name], par['k_N_div_x_%s' % C.name],
-        par['KD_Kx_N_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
-[Rule('N_div_%s' % C.name, N()**C >> N()**C + N()**C, exp['k_N_div_%s' % C.name]) for i,C in enumerate(cmp)]
+        par['KD_Kx_N_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i, C in enumerate(cmp)]
+[Rule('N_div_%s' % C.name, N()**C >> N()**C + N()**C, exp['k_N_div_%s' % C.name]) for i, C in enumerate(cmp)]
 
-[Parameter('k_N_die_0_%s' % C.name, k_N_die_0[i]) for i,C in enumerate(cmp)]
-[Parameter('k_N_die_x_%s' % C.name, k_N_die_x[i]) for i,C in enumerate(cmp)]
-[Parameter('KD_Kx_N_die_%s' % C.name, KD_Kx_N_die[i]) for i,C in enumerate(cmp)]
+[Parameter('k_N_die_0_%s' % C.name, k_N_die_0[i]) for i, C in enumerate(cmp)]
+[Parameter('k_N_die_x_%s' % C.name, k_N_die_x[i]) for i, C in enumerate(cmp)]
+[Parameter('KD_Kx_N_die_%s' % C.name, KD_Kx_N_die[i]) for i, C in enumerate(cmp)]
 [k_fate('k_N_die_%s' % C.name, par['k_N_die_0_%s' % C.name], par['k_N_die_x_%s' % C.name],
-        par['KD_Kx_N_die_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
-[Rule('N_die_%s' % C.name, N()**C >> None, exp['k_N_die_%s' % C.name]) for i,C in enumerate(cmp)]
+        par['KD_Kx_N_die_%s' % C.name], obs['Y_obs_%s' % C.name]) for i, C in enumerate(cmp)]
+[Rule('N_die_%s' % C.name, N()**C >> None, exp['k_N_die_%s' % C.name]) for i, C in enumerate(cmp)]
 
-##### A2 div and death #####
+# #### A2 div and death #####
 
-[Parameter('k_A2_div_0_%s' % C.name, k_A2_div_0[i]) for i,C in enumerate(cmp)]
-[Parameter('k_A2_div_x_%s' % C.name, k_A2_div_x[i]) for i,C in enumerate(cmp)]
-[Parameter('KD_Kx_A2_div_%s' % C.name, KD_Kx_A2_div[i]) for i,C in enumerate(cmp)]
+[Parameter('k_A2_div_0_%s' % C.name, k_A2_div_0[i]) for i, C in enumerate(cmp)]
+[Parameter('k_A2_div_x_%s' % C.name, k_A2_div_x[i]) for i, C in enumerate(cmp)]
+[Parameter('KD_Kx_A2_div_%s' % C.name, KD_Kx_A2_div[i]) for i, C in enumerate(cmp)]
 [k_fate('k_A2_div_%s' % C.name, par['k_A2_div_0_%s' % C.name], par['k_A2_div_x_%s' % C.name],
-        par['KD_Kx_A2_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
-[Rule('A2_div_%s' % C.name, A2()**C >> A2()**C + A2()**C, exp['k_A2_div_%s' % C.name]) for i,C in enumerate(cmp)]
+        par['KD_Kx_A2_div_%s' % C.name], obs['Y_obs_%s' % C.name]) for i, C in enumerate(cmp)]
+[Rule('A2_div_%s' % C.name, A2()**C >> A2()**C + A2()**C, exp['k_A2_div_%s' % C.name]) for i, C in enumerate(cmp)]
 
-[Parameter('k_A2_die_0_%s' % C.name, k_A2_die_0[i]) for i,C in enumerate(cmp)]
-[Parameter('k_A2_die_x_%s' % C.name, k_A2_die_x[i]) for i,C in enumerate(cmp)]
-[Parameter('KD_Kx_A2_die_%s' % C.name, KD_Kx_A2_die[i]) for i,C in enumerate(cmp)]
+[Parameter('k_A2_die_0_%s' % C.name, k_A2_die_0[i]) for i, C in enumerate(cmp)]
+[Parameter('k_A2_die_x_%s' % C.name, k_A2_die_x[i]) for i, C in enumerate(cmp)]
+[Parameter('KD_Kx_A2_die_%s' % C.name, KD_Kx_A2_die[i]) for i, C in enumerate(cmp)]
 [k_fate('k_A2_die_%s' % C.name, par['k_A2_die_0_%s' % C.name], par['k_A2_die_x_%s' % C.name],
-        par['KD_Kx_A2_die_%s' % C.name], obs['Y_obs_%s' % C.name]) for i,C in enumerate(cmp)]
-[Rule('A2_die_%s' % C.name, A2()**C >> None, exp['k_A2_die_%s' % C.name]) for i,C in enumerate(cmp)]
+        par['KD_Kx_A2_die_%s' % C.name], obs['Y_obs_%s' % C.name]) for i, C in enumerate(cmp)]
+[Rule('A2_die_%s' % C.name, A2()**C >> None, exp['k_A2_die_%s' % C.name]) for i, C in enumerate(cmp)]
 
-##### Y div and death #####
+# #### Y div and death #####
 
-[Parameter('k_Y_div_0_%s' % C.name, k_Y_div_0[i]) for i,C in enumerate(cmp)]
-[Parameter('k_Y_div_x_%s' % C.name, k_Y_div_x[i]) for i,C in enumerate(cmp)]
-[Parameter('KD_Kx_Y_div_%s' % C.name, KD_Kx_Y_div[i]) for i,C in enumerate(cmp)]
+[Parameter('k_Y_div_0_%s' % C.name, k_Y_div_0[i]) for i, C in enumerate(cmp)]
+[Parameter('k_Y_div_x_%s' % C.name, k_Y_div_x[i]) for i, C in enumerate(cmp)]
+[Parameter('KD_Kx_Y_div_%s' % C.name, KD_Kx_Y_div[i]) for i, C in enumerate(cmp)]
 [k_fate('k_Y_div_%s' % C.name, par['k_Y_div_0_%s' % C.name], par['k_Y_div_x_%s' % C.name],
-        par['KD_Kx_Y_div_%s' % C.name], obs['NE_all_%s' % C.name]) for i,C in enumerate(cmp)]
-[Rule('Y_div_%s' % C.name, Y()**C >> Y()**C + Y()**C, exp['k_Y_div_%s' % C.name]) for i,C in enumerate(cmp)]
+        par['KD_Kx_Y_div_%s' % C.name], obs['NE_all_%s' % C.name]) for i, C in enumerate(cmp)]
+[Rule('Y_div_%s' % C.name, Y()**C >> Y()**C + Y()**C, exp['k_Y_div_%s' % C.name]) for i, C in enumerate(cmp)]
 
-[Parameter('k_Y_die_%s' % C.name, k_Y_die[i]) for i,C in enumerate(cmp)]
-[Rule('Y_die_%s' % C.name, Y()**C >> None, par['k_Y_die_%s' % C.name]) for i,C in enumerate(cmp)]
+[Parameter('k_Y_die_%s' % C.name, k_Y_die[i]) for i, C in enumerate(cmp)]
+[Rule('Y_die_%s' % C.name, Y()**C >> None, par['k_Y_die_%s' % C.name]) for i, C in enumerate(cmp)]
 
 # Carrying capacity for total cell count
 CC = 1e6
@@ -186,45 +188,49 @@ CC = 1e6
  for i, C in enumerate(cmp)]
 
 # TODO: Report that in the Piecewise functions below, <= works but == doesn't
-[Expression('rate_A_cc_%s' % C.name, Piecewise((0, obs['A_obs_%s' % C.name] <= 0),
-                                               (exp['k_A_cc_%s' % C.name]*Cells_TOT/obs['A_obs_%s' % C.name], True)))
-                                               for i, C in enumerate(cmp)]
-[Expression('rate_N_cc_%s' % C.name, Piecewise((0, obs['N_obs_%s' % C.name] <= 0),
-                                               (exp['k_N_cc_%s' % C.name]*Cells_TOT/obs['N_obs_%s' % C.name], True)))
-                                               for i, C in enumerate(cmp)]
-[Expression('rate_A2_cc_%s' % C.name, Piecewise((0, obs['A2_obs_%s' % C.name] <= 0),
-                                                (exp['k_A2_cc_%s' % C.name]*Cells_TOT/obs['A2_obs_%s' % C.name], True)))
-                                                for i, C in enumerate(cmp)]
-[Expression('rate_Y_cc_%s' % C.name, Piecewise((0, obs['Y_obs_%s' % C.name] <= 0),
-                                               (exp['k_Y_cc_%s' % C.name]*Cells_TOT/obs['Y_obs_%s' % C.name], True)))
-                                               for i, C in enumerate(cmp)]
+[Expression('rate_A_cc_%s' % C.name,
+            Piecewise((0, obs['A_obs_%s' % C.name] <= 0),
+                      (exp['k_A_cc_%s' % C.name]*Cells_TOT/obs['A_obs_%s' % C.name], True)))
+    for i, C in enumerate(cmp)]
+[Expression('rate_N_cc_%s' % C.name,
+            Piecewise((0, obs['N_obs_%s' % C.name] <= 0),
+                      (exp['k_N_cc_%s' % C.name]*Cells_TOT/obs['N_obs_%s' % C.name], True)))
+    for i, C in enumerate(cmp)]
+[Expression('rate_A2_cc_%s' % C.name,
+            Piecewise((0, obs['A2_obs_%s' % C.name] <= 0),
+                      (exp['k_A2_cc_%s' % C.name]*Cells_TOT/obs['A2_obs_%s' % C.name], True)))
+    for i, C in enumerate(cmp)]
+[Expression('rate_Y_cc_%s' % C.name,
+            Piecewise((0, obs['Y_obs_%s' % C.name] <= 0),
+                      (exp['k_Y_cc_%s' % C.name]*Cells_TOT/obs['Y_obs_%s' % C.name], True)))
+    for i, C in enumerate(cmp)]
 
 [Rule('A_cc_%s' % C.name, A()**C + A()**C >> A()**C, exp['rate_A_cc_%s' % C.name]) for C in cmp]
 [Rule('N_cc_%s' % C.name, N()**C + N()**C >> N()**C, exp['rate_N_cc_%s' % C.name]) for C in cmp]
 [Rule('A2_cc_%s' % C.name, A2()**C + A2()**C >> A2()**C, exp['rate_A2_cc_%s' % C.name]) for C in cmp]
 [Rule('Y_cc_%s' % C.name, Y()**C + Y()**C >> Y()**C, exp['rate_Y_cc_%s' % C.name]) for C in cmp]
 
-##### Differentiation (state transitions) #####
+# #### Differentiation (state transitions) #####
 
-[Parameter('kf_diff_A_N_%s' % C.name, kf_diff_A_N[i]) for i,C in enumerate(cmp)]
-[Parameter('kr_diff_A_N_%s' % C.name, kr_diff_A_N[i]) for i,C in enumerate(cmp)]
+[Parameter('kf_diff_A_N_%s' % C.name, kf_diff_A_N[i]) for i, C in enumerate(cmp)]
+[Parameter('kr_diff_A_N_%s' % C.name, kr_diff_A_N[i]) for i, C in enumerate(cmp)]
 [Rule('A_diff_N_%s' % C.name, A()**C | N()**C, par['kf_diff_A_N_%s' % C.name],
-      par['kr_diff_A_N_%s' % C.name]) for i,C in enumerate(cmp)]
+      par['kr_diff_A_N_%s' % C.name]) for i, C in enumerate(cmp)]
 
-[Parameter('kf_diff_A_A2_%s' % C.name, kf_diff_A_A2[i]) for i,C in enumerate(cmp)]
-[Parameter('kr_diff_A_A2_%s' % C.name, kr_diff_A_A2[i]) for i,C in enumerate(cmp)]
+[Parameter('kf_diff_A_A2_%s' % C.name, kf_diff_A_A2[i]) for i, C in enumerate(cmp)]
+[Parameter('kr_diff_A_A2_%s' % C.name, kr_diff_A_A2[i]) for i, C in enumerate(cmp)]
 [Rule('A_diff_A2_%s' % C.name, A()**C | A2()**C, par['kf_diff_A_A2_%s' % C.name],
-      par['kr_diff_A_A2_%s' % C.name]) for i,C in enumerate(cmp)]
+      par['kr_diff_A_A2_%s' % C.name]) for i, C in enumerate(cmp)]
 
-[Parameter('kf_diff_N_A2_%s' % C.name, kf_diff_N_A2[i]) for i,C in enumerate(cmp)]
-[Parameter('kr_diff_N_A2_%s' % C.name, kr_diff_N_A2[i]) for i,C in enumerate(cmp)]
+[Parameter('kf_diff_N_A2_%s' % C.name, kf_diff_N_A2[i]) for i, C in enumerate(cmp)]
+[Parameter('kr_diff_N_A2_%s' % C.name, kr_diff_N_A2[i]) for i, C in enumerate(cmp)]
 [Rule('N_diff_A2_%s' % C.name, N()**C | A2()**C, par['kf_diff_N_A2_%s' % C.name],
-      par['kr_diff_N_A2_%s' % C.name]) for i,C in enumerate(cmp)]
+      par['kr_diff_N_A2_%s' % C.name]) for i, C in enumerate(cmp)]
 
-[Parameter('kf_diff_N_Y_%s' % C.name, kf_diff_N_Y[i]) for i,C in enumerate(cmp)]
-[Rule('N_diff_Y_%s' % C.name, N()**C >> Y()**C, par['kf_diff_N_Y_%s' % C.name]) for i,C in enumerate(cmp)]
+[Parameter('kf_diff_N_Y_%s' % C.name, kf_diff_N_Y[i]) for i, C in enumerate(cmp)]
+[Rule('N_diff_Y_%s' % C.name, N()**C >> Y()**C, par['kf_diff_N_Y_%s' % C.name]) for i, C in enumerate(cmp)]
 
-## Invasion (epithelium to stroma)
+# Invasion (epithelium to stroma)
 
 Parameter('kf_A_epi_to_stroma', 0.5)
 Parameter('kf_N_epi_to_stroma', 0.5)
@@ -255,6 +261,7 @@ for C_name in [c.name for c in cmp] + ['TOT']:
 
     plt.figure()
     label = []
+    suffix = ''
     for name in obs_name:
         label.append(name[:name.find('_')])
         if C_name == 'E':
@@ -270,16 +277,15 @@ for C_name in [c.name for c in cmp] + ['TOT']:
     plt.ylabel('cell count', fontsize=16)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
     plt.legend(loc=0)
     plt.tight_layout()
     
-    cell_tot = sum(x.all[name] for name in obs_name)
-    
     plt.figure()
+    cell_tot = sum(x.all[name] for name in obs_name)
     plt.fill_between(tspan, x.all[obs_name[0]] / cell_tot, label=label[0])
     sum_prev = x.all[obs_name[0]]
-    for i in range(1,len(obs_name)-1):
+    for i in range(1, len(obs_name)-1):
         plt.fill_between(tspan, (x.all[obs_name[i]] + sum_prev) / cell_tot, sum_prev / cell_tot, label=label[i])
         sum_prev += x.all[obs_name[i]]
     plt.fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1])
@@ -287,7 +293,7 @@ for C_name in [c.name for c in cmp] + ['TOT']:
     plt.ylabel('cell fraction', fontsize=16)
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
-    plt.legend(loc=(0.75,0.6), framealpha=1)
+    plt.legend(loc=(0.75, 0.6), framealpha=1)
     plt.tight_layout()
 
 plt.show()

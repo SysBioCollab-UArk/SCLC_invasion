@@ -12,56 +12,57 @@ def k_fate(ename, k_fate_0, k_fate_x, kd_kx_fate, effector_cell_obs):
 
 # #### A #####
 
-k_A_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
-k_A_div_x = [2.0, 2.0]
-KD_Kx_A_div = [1000.0, 1000.0]
-k_A_die_0 = [0.9, 0.9]
-k_A_die_x = [0.1, 0.1]
+k_A_div_0 = [2.0, 0.1]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
+k_A_div_x = [50.0, 1.0]
+KD_Kx_A_div = [1000.0, 500.0]
+k_A_die_0 = [2.0, 2.0]
+k_A_die_x = [1.0, 0.1]
 KD_Kx_A_die = [1000.0, 1000.0]
 
 # #### N #####
 
-k_N_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
-k_N_div_x = [2.0, 2.0]
-KD_Kx_N_div = [1000.0, 1000.0]
-k_N_die_0 = [0.9, 0.9]
-k_N_die_x = [0.1, 0.1]
+k_N_div_0 = [2.0, 0.1]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
+k_N_div_x = [50.0, 1.0]
+KD_Kx_N_div = [1000.0, 500.0]
+k_N_die_0 = [2.0, 2.0]
+k_N_die_x = [1.0, 0.1]
 KD_Kx_N_die = [1000.0, 1000.0]
 
 # #### A2 #####
 
-k_A2_div_0 = [1.0, 1.0]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
-k_A2_div_x = [2.0, 2.0]
-KD_Kx_A2_div = [1000.0, 1000.0]
-k_A2_die_0 = [0.9, 0.9]
-k_A2_die_x = [0.1, 0.1]
+k_A2_div_0 = [2.0, 0.1]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
+k_A2_div_x = [50.0, 1.0]
+KD_Kx_A2_div = [1000.0, 500.0]
+k_A2_die_0 = [2.0, 2.0]
+k_A2_die_x = [1.0, 0.1]
 KD_Kx_A2_die = [1000.0, 1000.0]
 
 # #### Y #####
 
-k_Y_div_0 = [1.1, 1.1]  # [epithelium, stroma]
-k_Y_div_x = [0.9, 0.9]
-KD_Kx_Y_div = [1000.0, 1000.0]
+k_Y_div_0 = [4.0, 2.0]  # [epithelium, stroma]
+k_Y_div_x = [2.0, 1.0]
+KD_Kx_Y_div = [500.0, 10000.0]
 k_Y_die = [0.1, 0.1]
+
 
 # #### A <> N #####
 
-kf_diff_A_N = [0.1, 0.1]  # [epithelium, stroma]
+kf_diff_A_N = [0.01, 0.1]  # [epithelium, stroma]
 kr_diff_A_N = [0.1, 0.1]
 
 # #### A <> A2 #####
 
-kf_diff_A_A2 = [0.1, 0.1]  # [epithelium, stroma]
+kf_diff_A_A2 = [0.05, 0.05]  # [epithelium, stroma]
 kr_diff_A_A2 = [0.075, 0.075]
 
 # #### N <> A2 #####
 
-kf_diff_N_A2 = [0.1, 0.1]  # [epithelium, stroma]
+kf_diff_N_A2 = [0.001, 0.1]  # [epithelium, stroma]
 kr_diff_N_A2 = [0.1, 0.1]
 
 # #### N >> Y #####
 
-kf_diff_N_Y = [5.0, 5.0]  # [epithelium, stroma]
+kf_diff_N_Y = [0.001, 0.1]  # [epithelium, stroma]
 
 Model()
 
@@ -232,10 +233,10 @@ CC = 1e6
 
 # Invasion (epithelium to stroma)
 
-Parameter('kf_A_epi_to_stroma', 0.5)
-Parameter('kf_N_epi_to_stroma', 0.5)
-Parameter('kf_A2_epi_to_stroma', 0.5)
-Parameter('kf_Y_epi_to_stroma', 0.5)
+Parameter('kf_A_epi_to_stroma', 0)  # 0.01
+Parameter('kf_N_epi_to_stroma', 0)
+Parameter('kf_A2_epi_to_stroma', 0)
+Parameter('kf_Y_epi_to_stroma', 0)
 
 Parameter('kr_A_epi_to_stroma', 0)
 Parameter('kr_N_epi_to_stroma', 0)
@@ -247,7 +248,7 @@ Rule('N_epi_to_stroma', N()**E | N()**S, kf_N_epi_to_stroma, kr_N_epi_to_stroma)
 Rule('A2_epi_to_stroma', A2()**E | A2()**S, kf_A2_epi_to_stroma, kr_A2_epi_to_stroma)
 Rule('Y_epi_to_stroma', Y()**E | Y()**S, kf_Y_epi_to_stroma, kr_Y_epi_to_stroma)
 
-tspan = np.linspace(0, 20, 101)
+tspan = np.linspace(0, 5000, 50001)
 
 sim = ScipyOdeSimulator(model, verbose=True)
 x = sim.run(tspan)

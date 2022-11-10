@@ -16,16 +16,16 @@ k_A_div_0 = [2.0, 0.1]  # [epithelium, stroma] # TPCs divide approximately once 
 k_A_div_x = [8.0, 1.0]  # [50.0, 1.0]
 KD_Kx_A_div = [1000.0, 500.0]
 k_A_die_0 = [0.2, 2.0]  # [2.0, 2.0]
-k_A_die_x = [1.0, 0.1]
+k_A_die_x = [2.0, 0.1]
 KD_Kx_A_die = [1000.0, 1000.0]
 
 # #### N #####
 
 k_N_div_0 = [2.0, 0.1]  # [epithelium, stroma] # TPCs divide approximately once per day in culture
-k_N_div_x = [8.0, 1.0]  # [50.0, 1.0]
+k_N_div_x = [9.0, 1.0]  # [50.0, 1.0]
 KD_Kx_N_div = [1000.0, 500.0]
 k_N_die_0 = [1.9, 2.0]
-k_N_die_x = [1.0, 0.1]
+k_N_die_x = [2.25, 0.1]
 KD_Kx_N_die = [1000.0, 1000.0]
 
 # #### A2 #####
@@ -34,7 +34,7 @@ k_A2_div_0 = [2.0, 0.1]  # [epithelium, stroma] # TPCs divide approximately once
 k_A2_div_x = [8.0, 1.0]  # [50.0, 1.0]
 KD_Kx_A2_div = [1000.0, 500.0]
 k_A2_die_0 = [0.2, 2.0]
-k_A2_die_x = [1.0, 0.1]
+k_A2_die_x = [2.0, 0.1]
 KD_Kx_A2_die = [1000.0, 1000.0]
 
 # #### Y #####
@@ -42,7 +42,7 @@ KD_Kx_A2_die = [1000.0, 1000.0]
 k_Y_div_0 = [4.0, 2.0]  # [epithelium, stroma]
 k_Y_div_x = [3.0, 1.0]  # [2.0, 1.0]
 KD_Kx_Y_div = [1000.0, 10000.0]  # [500.0, 10000.0]
-k_Y_die = [0.1, 0.1]
+k_Y_die = [0.0, 0.1]
 
 # #### A <> N #####
 

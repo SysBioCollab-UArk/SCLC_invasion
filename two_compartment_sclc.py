@@ -100,15 +100,15 @@ Initial(A2()**S, A2_init_S)
 Initial(Y()**S, Y_init_S)
 
 Observable('A_obs_TOT', A())
-Observable('N_obs_TOT', N())
 Observable('A2_obs_TOT', A2())
+Observable('N_obs_TOT', N())
 Observable('Y_obs_TOT', Y())
 Observable('NE_all_TOT', A()+N()+A2())
 Observable('Cells_TOT', A()+N()+A2()+Y())
 
 [Observable('A_obs_%s' % C.name, A()**C) for C in cmp]
-[Observable('N_obs_%s' % C.name, N()**C) for C in cmp]
 [Observable('A2_obs_%s' % C.name, A2()**C) for C in cmp]
+[Observable('N_obs_%s' % C.name, N()**C) for C in cmp]
 [Observable('Y_obs_%s' % C.name, Y()**C) for C in cmp]
 [Observable('NE_all_%s' % C.name, A()**C+N()**C+A2()**C) for C in cmp]
 [Observable('Cells_%s' % C.name, A()**C+N()**C+A2()**C+Y()**C) for C in cmp]
@@ -254,9 +254,11 @@ x = sim.run(tspan)
 for C_name in [c.name for c in cmp] + ['TOT']:
 
     obs_name = ['A_obs_%s' % C_name,
-                'N_obs_%s' % C_name,
                 'A2_obs_%s' % C_name,
+                'N_obs_%s' % C_name,
                 'Y_obs_%s' % C_name]
+
+    color = ['darkred', 'r', 'c', 'b']
 
     plt.figure()
     label = []
@@ -282,10 +284,11 @@ for C_name in [c.name for c in cmp] + ['TOT']:
     
     plt.figure()
     cell_tot = sum(x.all[name] for name in obs_name)
-    plt.fill_between(tspan, x.all[obs_name[0]] / cell_tot, label=label[0])
+    plt.fill_between(tspan, x.all[obs_name[0]] / cell_tot, label=label[0], color=color[0])
     sum_prev = x.all[obs_name[0]]
     for i in range(1, len(obs_name)-1):
-        plt.fill_between(tspan, (x.all[obs_name[i]] + sum_prev) / cell_tot, sum_prev / cell_tot, label=label[i])
+        plt.fill_between(tspan, (x.all[obs_name[i]] + sum_prev) / cell_tot, sum_prev / cell_tot, label=label[i],
+                         color=color[i])
         sum_prev += x.all[obs_name[i]]
     plt.fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1])
     plt.xlabel('time (d)', fontsize=16)

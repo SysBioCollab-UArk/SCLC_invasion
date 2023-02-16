@@ -247,7 +247,6 @@ Rule('Y_epi_to_stroma', Y()**E | Y()**S, kf_Y_epi_to_stroma, kr_Y_epi_to_stroma)
 
 # tspan = np.linspace(0, 5000, 50001)
 tspan = np.linspace(0, 10, 10001)
-
 sim = ScipyOdeSimulator(model, verbose=True)
 x = sim.run(tspan)
 
@@ -263,7 +262,7 @@ for C_name in [c.name for c in cmp] + ['TOT']:
     plt.figure()
     label = []
     suffix = ''
-    for name in obs_name:
+    for i, name in enumerate(obs_name):
         label.append(name[:name.find('_')])
         if C_name == 'E':
             suffix = '_epith'
@@ -272,7 +271,7 @@ for C_name in [c.name for c in cmp] + ['TOT']:
         else:
             suffix = '_total'
         label[-1] += suffix
-        plt.plot(tspan, x.all[name], lw=3, label=label[-1])
+        plt.plot(tspan, x.all[name], lw=3, label=label[-1], color=color[i])
     plt.plot(tspan, x.all['Cells_%s' % C_name], 'k--', lw=3, label='Cells%s' % suffix)
     plt.xlabel('time (d)', fontsize=16)
     plt.ylabel('cell count', fontsize=16)
@@ -282,15 +281,31 @@ for C_name in [c.name for c in cmp] + ['TOT']:
     plt.legend(loc=0)
     plt.tight_layout()
     
+    # plt.figure()
+    # cell_tot = sum(x.all[name] for name in obs_name)
+    # plt.fill_between(tspan, x.all[obs_name[0]] / cell_tot, label=label[0], color=color[0])
+    # sum_prev = np.array([val for val in x.all[obs_name[0]]])
+    # for i in range(1, len(obs_name)-1):
+    #     plt.fill_between(tspan, (x.all[obs_name[i]] + sum_prev) / cell_tot, sum_prev / cell_tot, label=label[i],
+    #                      color=color[i])
+    #     sum_prev += x.all[obs_name[i]]
+    # plt.fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1], color=color[-1])
+    # plt.xlabel('time (d)', fontsize=16)
+    # plt.ylabel('cell fraction', fontsize=16)
+    # plt.xticks(fontsize=14)
+    # plt.yticks(fontsize=14)
+    # plt.legend(loc=(0.75, 0.6), framealpha=1)
+    # plt.tight_layout()
+
     plt.figure()
     cell_tot = sum(x.all[name] for name in obs_name)
-    plt.fill_between(tspan, x.all[obs_name[0]] / cell_tot, label=label[0], color=color[0])
-    sum_prev = x.all[obs_name[0]]
-    for i in range(1, len(obs_name)-1):
-        plt.fill_between(tspan, (x.all[obs_name[i]] + sum_prev) / cell_tot, sum_prev / cell_tot, label=label[i],
+    sum_prev = np.sum(np.array([val for val in x.all[obs_name[i]]]) for i in range(len(obs_name)-1))
+    plt.fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1], color=color[-1])
+    for i in range(len(obs_name) - 2, 0, -1):
+        plt.fill_between(tspan, sum_prev / cell_tot, (sum_prev - x.all[obs_name[i]]) / cell_tot, label=label[i],
                          color=color[i])
-        sum_prev += x.all[obs_name[i]]
-    plt.fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1])
+        sum_prev -= x.all[obs_name[i]]
+    plt.fill_between(tspan, sum_prev / cell_tot, label=label[0], color=color[0])
     plt.xlabel('time (d)', fontsize=16)
     plt.ylabel('cell fraction', fontsize=16)
     plt.xticks(fontsize=14)

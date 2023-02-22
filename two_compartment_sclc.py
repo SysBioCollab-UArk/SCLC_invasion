@@ -39,19 +39,19 @@ KD_Kx_A2_die = [1000.0, 1000.0]
 
 # #### Y #####
 
-k_Y_div_0 = [4.0, 4.0]  # [epithelium, stroma]
-k_Y_div_x = [3.0, 3.0]  # [2.0, 1.0]
+k_Y_div_0 = [0.4, 4.0]  # [epithelium, stroma]
+k_Y_div_x = [0.3, 3.0]  # [2.0, 1.0]
 KD_Kx_Y_div = [1000.0, 1000.0]  # [500.0, 10000.0]
 k_Y_die = [0.0, 0.0]
 
 # #### A <> N #####
 
-kf_diff_A_N = [0, 0.1]  # [0.01, 0.1]  # [epithelium, stroma]
+kf_diff_A_N = [0.00035, 0.1]  # [0.01, 0.1]  # [epithelium, stroma]
 kr_diff_A_N = [0, 0]  # [0.1, 0.1]
 
 # #### A <> A2 #####
 
-kf_diff_A_A2 = [0, 0]  # [0.05, 0.05]  # [epithelium, stroma]
+kf_diff_A_A2 = [0.00035, 0]  # [0.05, 0.05]  # [epithelium, stroma]
 kr_diff_A_A2 = [0, 0.1]  # [0.075, 0.075]
 
 # #### N <> A2 #####
@@ -79,10 +79,10 @@ Monomer('Y')
 Compartment('E', parent=None, dimension=3)  # epithelium
 Compartment('S', parent=None, dimension=3)  # stroma
 
-Parameter('A_init_E', 100)
-Parameter('N_init_E', 100)
-Parameter('A2_init_E', 100)
-Parameter('Y_init_E', 100)
+Parameter('A_init_E', 258)
+Parameter('N_init_E', 41)
+Parameter('A2_init_E', 89)
+Parameter('Y_init_E', 13)
 
 Initial(A()**E, A_init_E)
 Initial(N()**E, N_init_E)
@@ -231,13 +231,13 @@ CC = 1e6
 # Invasion (epithelium to stroma)
 
 Parameter('kf_A_epi_to_stroma', 1e-4)  # 0.01
-Parameter('kf_N_epi_to_stroma', 1e-4)
-Parameter('kf_A2_epi_to_stroma', 1e-4)
+Parameter('kf_N_epi_to_stroma', 5e-3)
+Parameter('kf_A2_epi_to_stroma', 5e-3)
 Parameter('kf_Y_epi_to_stroma', 1e-4)
 
-Parameter('kr_A_epi_to_stroma', 0)
-Parameter('kr_N_epi_to_stroma', 0)
-Parameter('kr_A2_epi_to_stroma', 0)
+Parameter('kr_A_epi_to_stroma', 1e-6)
+Parameter('kr_N_epi_to_stroma', 1e-6)
+Parameter('kr_A2_epi_to_stroma', 1e-6)
 Parameter('kr_Y_epi_to_stroma', 0)
 
 Rule('A_epi_to_stroma', A()**E | A()**S, kf_A_epi_to_stroma, kr_A_epi_to_stroma)
@@ -246,9 +246,12 @@ Rule('A2_epi_to_stroma', A2()**E | A2()**S, kf_A2_epi_to_stroma, kr_A2_epi_to_st
 Rule('Y_epi_to_stroma', Y()**E | Y()**S, kf_Y_epi_to_stroma, kr_Y_epi_to_stroma)
 
 # tspan = np.linspace(0, 5000, 50001)
-tspan = np.linspace(0, 1000, 10001)
+tspan = np.linspace(0, 10000, 100001)
 sim = ScipyOdeSimulator(model, verbose=True)
 x = sim.run(tspan)
+
+fig,ax = plt.subplots(nrows=3,ncols=2)
+row=0
 
 for C_name in [c.name for c in cmp] + ['TOT']:
 
@@ -259,7 +262,8 @@ for C_name in [c.name for c in cmp] + ['TOT']:
 
     color = ['darkred', 'r', 'c', 'b']
 
-    plt.figure()
+    # plt.figure()
+    col = 0
     label = []
     suffix = ''
     for i, name in enumerate(obs_name):
@@ -271,15 +275,15 @@ for C_name in [c.name for c in cmp] + ['TOT']:
         else:
             suffix = '_total'
         label[-1] += suffix
-        plt.plot(tspan, x.all[name], lw=3, label=label[-1], color=color[i])
-    plt.plot(tspan, x.all['Cells_%s' % C_name], 'k--', lw=3, label='Cells%s' % suffix)
-    plt.xlabel('time (d)', fontsize=16)
-    plt.ylabel('cell count', fontsize=16)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-    plt.legend(loc=0)
-    plt.tight_layout()
+        ax[row,col].plot(tspan, x.all[name], lw=2, label=label[-1], color=color[i])
+    ax[row,col].plot(tspan, x.all['Cells_%s' % C_name], 'k--', lw=2, label='Cells%s' % suffix)
+    ax[row,col].set_xlabel('time (d)') #, fontsize=16)
+    ax[row,col].set_ylabel('cell count') #, fontsize=16)
+    ax[row,col].xaxis.set_tick_params() #labelsize=14)
+    ax[row,col].yaxis.set_tick_params() #labelsize=14)
+    ax[row,col].ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+    ax[row,col].legend(loc=0, fontsize=6)
+    # plt.tight_layout()
     
     # plt.figure()
     # cell_tot = sum(x.all[name] for name in obs_name)
@@ -297,20 +301,22 @@ for C_name in [c.name for c in cmp] + ['TOT']:
     # plt.legend(loc=(0.75, 0.6), framealpha=1)
     # plt.tight_layout()
 
-    plt.figure()
+    # plt.figure()
+    col=1
     cell_tot = sum(x.all[name] for name in obs_name)
     sum_prev = np.sum(np.array([val for val in x.all[obs_name[i]]]) for i in range(len(obs_name)-1))
-    plt.fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1], color=color[-1])
+    ax[row,col].fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1], color=color[-1])
     for i in range(len(obs_name) - 2, 0, -1):
-        plt.fill_between(tspan, sum_prev / cell_tot, (sum_prev - x.all[obs_name[i]]) / cell_tot, label=label[i],
+        ax[row,col].fill_between(tspan, sum_prev / cell_tot, (sum_prev - x.all[obs_name[i]]) / cell_tot, label=label[i],
                          color=color[i])
         sum_prev -= x.all[obs_name[i]]
-    plt.fill_between(tspan, sum_prev / cell_tot, label=label[0], color=color[0])
-    plt.xlabel('time (d)', fontsize=16)
-    plt.ylabel('cell fraction', fontsize=16)
-    plt.xticks(fontsize=14)
-    plt.yticks(fontsize=14)
-    plt.legend(loc=(0.75, 0.6), framealpha=1)
-    plt.tight_layout()
-
+    ax[row,col].fill_between(tspan, sum_prev / cell_tot, label=label[0], color=color[0])
+    ax[row,col].set_xlabel('time (d)') #, fontsize=16)
+    ax[row,col].set_ylabel('cell fraction') #, fontsize=16)
+    ax[row,col].xaxis.set_tick_params() #labelsize=14)
+    ax[row,col].yaxis.set_tick_params() #labelsize=14)
+    # ax[row,col].legend(loc=(0.75, 0.6), framealpha=1)
+    # plt.tight_layout()
+    row += 1
+plt.tight_layout(pad=0)
 plt.show()

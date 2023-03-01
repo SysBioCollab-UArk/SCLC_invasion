@@ -47,7 +47,7 @@ k_Y_die = [0.0, 0.0]
 # #### A <> N #####
 
 kf_diff_A_N = [0.00035, 0.1]  # [0.01, 0.1]  # [epithelium, stroma]
-kr_diff_A_N = [0, 0]  # [0.1, 0.1]
+kr_diff_A_N = [0.01, 0]  # [0.1, 0.1]
 
 # #### A <> A2 #####
 
@@ -56,12 +56,13 @@ kr_diff_A_A2 = [0, 0.1]  # [0.075, 0.075]
 
 # #### N <> A2 #####
 
-kf_diff_N_A2 = [0, 0]  # [0.001, 0.1]  # [epithelium, stroma]
+kf_diff_N_A2 = [0.01, 0]  # [0.001, 0.1]  # [epithelium, stroma]
 kr_diff_N_A2 = [0, 0]  # [0.1, 0.1]
 
 # #### N >> Y #####
 
 kf_diff_N_Y = [0, 0.1]  # [0.001, 0.1]  # [epithelium, stroma]
+kr_diff_N_Y = [0.1, 0]  # [epithelium, stroma]
 
 Model()
 
@@ -226,19 +227,21 @@ CC = 1e6
       par['kr_diff_N_A2_%s' % C.name]) for i, C in enumerate(cmp)]
 
 [Parameter('kf_diff_N_Y_%s' % C.name, kf_diff_N_Y[i]) for i, C in enumerate(cmp)]
-[Rule('N_diff_Y_%s' % C.name, N()**C >> Y()**C, par['kf_diff_N_Y_%s' % C.name]) for i, C in enumerate(cmp)]
+[Parameter('kr_diff_N_Y_%s' % C.name, kr_diff_N_Y[i]) for i, C in enumerate(cmp)]
+[Rule('N_diff_Y_%s' % C.name, N()**C | Y()**C, par['kf_diff_N_Y_%s' % C.name],
+      par['kr_diff_N_Y_%s' % C.name]) for i, C in enumerate(cmp)]
 
 # Invasion (epithelium to stroma)
 
-Parameter('kf_A_epi_to_stroma', 1e-4)  # 0.01
-Parameter('kf_N_epi_to_stroma', 5e-3)
-Parameter('kf_A2_epi_to_stroma', 5e-3)
-Parameter('kf_Y_epi_to_stroma', 1e-4)
+Parameter('kf_A_epi_to_stroma', 1e-3)  # 1e-4
+Parameter('kf_N_epi_to_stroma', 1e-3)  # 5e-3
+Parameter('kf_A2_epi_to_stroma', 1e-3)  # 5e-3
+Parameter('kf_Y_epi_to_stroma', 1e-3)  # 1e-4
 
-Parameter('kr_A_epi_to_stroma', 1e-6)
-Parameter('kr_N_epi_to_stroma', 1e-6)
-Parameter('kr_A2_epi_to_stroma', 1e-6)
-Parameter('kr_Y_epi_to_stroma', 0)
+Parameter('kr_A_epi_to_stroma', 0)
+Parameter('kr_N_epi_to_stroma', 0)
+Parameter('kr_A2_epi_to_stroma', 0)
+Parameter('kr_Y_epi_to_stroma', 1e-3)
 
 Rule('A_epi_to_stroma', A()**E | A()**S, kf_A_epi_to_stroma, kr_A_epi_to_stroma)
 Rule('N_epi_to_stroma', N()**E | N()**S, kf_N_epi_to_stroma, kr_N_epi_to_stroma)
@@ -246,7 +249,7 @@ Rule('A2_epi_to_stroma', A2()**E | A2()**S, kf_A2_epi_to_stroma, kr_A2_epi_to_st
 Rule('Y_epi_to_stroma', Y()**E | Y()**S, kf_Y_epi_to_stroma, kr_Y_epi_to_stroma)
 
 # tspan = np.linspace(0, 5000, 50001)
-tspan = np.linspace(0, 10000, 100001)
+tspan = np.linspace(0, 4e3, int(4e3)+1)
 sim = ScipyOdeSimulator(model, verbose=True)
 x = sim.run(tspan)
 

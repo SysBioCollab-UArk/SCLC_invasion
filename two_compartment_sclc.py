@@ -5,6 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sympy import Piecewise
 
+# "For harvesting invasive lung tumor tissue, RPM mice were sacrified at 4-9 weeks post-adenoviral infection"
+# Ireland et al. (2020) Cancer Cell, https://doi.org/10.1016/j.ccell.2020.05.001
+
 
 def k_fate(ename, k_fate_0, k_fate_x, kd_kx_fate, effector_cell_obs):
     return Expression(ename, (k_fate_0*kd_kx_fate + k_fate_x*effector_cell_obs) / (kd_kx_fate + effector_cell_obs))
@@ -46,23 +49,23 @@ k_Y_die = [0.0, 0.0]
 
 # #### A <> N #####
 
-kf_diff_A_N = [0.001, 0.1]  # [0.01, 0.1]  # [epithelium, stroma]
-kr_diff_A_N = [0.01, 0]  # [0.1, 0.1]
+kf_diff_A_N = [0.1, 0.5]  # [0.01, 0.1]  # [epithelium, stroma]
+kr_diff_A_N = [0.5, 0.1]  # [0.1, 0.1]
 
 # #### A <> A2 #####
 
-kf_diff_A_A2 = [0.0001, 0]  # [0.05, 0.05]  # [epithelium, stroma]
-kr_diff_A_A2 = [0.0001, 0.1]  # [0.075, 0.075]
+kf_diff_A_A2 = [0, 0]  # [0.05, 0.05]  # [epithelium, stroma]
+kr_diff_A_A2 = [0, 0]  # [0.075, 0.075]
 
 # #### N <> A2 #####
 
-kf_diff_N_A2 = [0.01, 0]  # [0.001, 0.1]  # [epithelium, stroma]
-kr_diff_N_A2 = [0, 0]  # [0.1, 0.1]
+kf_diff_N_A2 = [0.5, 0.1]  # [0.001, 0.1]  # [epithelium, stroma]
+kr_diff_N_A2 = [0, 0.5]  # [0.1, 0.1]
 
-# #### N >> Y #####
+# #### N <> Y #####
 
-kf_diff_N_Y = [0, 0.1]  # [0.001, 0.1]  # [epithelium, stroma]
-kr_diff_N_Y = [0.1, 0.025]  # [epithelium, stroma]
+kf_diff_N_Y = [0, 1]  # [0.001, 0.1]  # [epithelium, stroma]
+kr_diff_N_Y = [0.5, 0]  # [epithelium, stroma]
 
 Model()
 
@@ -233,93 +236,98 @@ CC = 1e6
 
 # Invasion (epithelium to stroma)
 
-Parameter('kf_A_epi_to_stroma', 1e-2)  # 1e-4
-Parameter('kf_N_epi_to_stroma', 1e-2)  # 5e-3
-Parameter('kf_A2_epi_to_stroma', 1e-2)  # 5e-3
-Parameter('kf_Y_epi_to_stroma', 1e-2)  # 1e-4
+Parameter('kf_A_epi_to_stroma', 0.1)  # 1e-2
+Parameter('kf_N_epi_to_stroma', 0.1)  # 1e-2
+Parameter('kf_A2_epi_to_stroma', 0.1)  # 1e-2
+Parameter('kf_Y_epi_to_stroma', 0.1)  # 1e-2
 
-Parameter('kr_A_epi_to_stroma', 0)
-Parameter('kr_N_epi_to_stroma', 1e-2)
-Parameter('kr_A2_epi_to_stroma', 0)
-Parameter('kr_Y_epi_to_stroma', 1e-2)
+Parameter('kr_A_epi_to_stroma', 0.02)  # 0
+Parameter('kr_N_epi_to_stroma', 0.02)  # 1e-2
+Parameter('kr_A2_epi_to_stroma', 0.02)  # 0
+Parameter('kr_Y_epi_to_stroma', 0.02)  # 1e-2
 
 Rule('A_epi_to_stroma', A()**E | A()**S, kf_A_epi_to_stroma, kr_A_epi_to_stroma)
 Rule('N_epi_to_stroma', N()**E | N()**S, kf_N_epi_to_stroma, kr_N_epi_to_stroma)
 Rule('A2_epi_to_stroma', A2()**E | A2()**S, kf_A2_epi_to_stroma, kr_A2_epi_to_stroma)
 Rule('Y_epi_to_stroma', Y()**E | Y()**S, kf_Y_epi_to_stroma, kr_Y_epi_to_stroma)
 
-# tspan = np.linspace(0, 5000, 50001)
-tspan = np.linspace(0, 4e2, int(4e2)+1)
+# SIMULATIONS
 sim = ScipyOdeSimulator(model, verbose=True)
-x = sim.run(tspan)
 
-fig,ax = plt.subplots(nrows=3,ncols=2)
-row=0
+# Simulate period before invasion begins
+param_values = {'kf_A_epi_to_stroma': 0, 'kf_N_epi_to_stroma': 0,
+                'kf_A2_epi_to_stroma': 0, 'kf_Y_epi_to_stroma': 0}
+tspan1 = np.linspace(0, 30, 31)
+output1 = sim.run(tspan=tspan1, param_values=param_values)
 
-for C_name in [c.name for c in cmp] + ['TOT']:
+# Simulation invasion
+param_values = {'kf_A_epi_to_stroma': 0.1, 'kf_N_epi_to_stroma': 0.1,
+                'kf_A2_epi_to_stroma': 0.1, 'kf_Y_epi_to_stroma': 0.1}
+tspan2 = np.linspace(30, 80, 51)
+output2 = sim.run(tspan2, param_values=param_values)
 
-    obs_name = ['A_obs_%s' % C_name,
-                'A2_obs_%s' % C_name,
-                'N_obs_%s' % C_name,
-                'Y_obs_%s' % C_name]
+fig, ax = plt.subplots(nrows=3, ncols=2, sharex='all', figsize=(6.4, 6.4))  # (6.4, 4.8)
 
-    color = ['darkred', 'r', 'c', 'b']
+for lab, tspan, x in zip([True, False], [tspan1, tspan2], [output1, output2]):
+    row = 0
+    for C_name in [c.name for c in cmp] + ['TOT']:
 
-    # plt.figure()
-    col = 0
-    label = []
-    suffix = ''
-    for i, name in enumerate(obs_name):
-        label.append(name[:name.find('_')])
-        if C_name == 'E':
-            suffix = '_epith'
-        elif C_name == 'S':
-            suffix = '_stroma'
-        else:
-            suffix = '_total'
-        label[-1] += suffix
-        ax[row,col].plot(tspan, x.all[name], lw=2, label=label[-1], color=color[i])
-    ax[row,col].plot(tspan, x.all['Cells_%s' % C_name], 'k--', lw=2, label='Cells%s' % suffix)
-    ax[row,col].set_xlabel('time (d)') #, fontsize=16)
-    ax[row,col].set_ylabel('cell count') #, fontsize=16)
-    ax[row,col].xaxis.set_tick_params() #labelsize=14)
-    ax[row,col].yaxis.set_tick_params() #labelsize=14)
-    ax[row,col].ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
-    ax[row,col].legend(loc=0, fontsize=6)
-    # plt.tight_layout()
-    
-    # plt.figure()
-    # cell_tot = sum(x.all[name] for name in obs_name)
-    # plt.fill_between(tspan, x.all[obs_name[0]] / cell_tot, label=label[0], color=color[0])
-    # sum_prev = np.array([val for val in x.all[obs_name[0]]])
-    # for i in range(1, len(obs_name)-1):
-    #     plt.fill_between(tspan, (x.all[obs_name[i]] + sum_prev) / cell_tot, sum_prev / cell_tot, label=label[i],
-    #                      color=color[i])
-    #     sum_prev += x.all[obs_name[i]]
-    # plt.fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1], color=color[-1])
-    # plt.xlabel('time (d)', fontsize=16)
-    # plt.ylabel('cell fraction', fontsize=16)
-    # plt.xticks(fontsize=14)
-    # plt.yticks(fontsize=14)
-    # plt.legend(loc=(0.75, 0.6), framealpha=1)
-    # plt.tight_layout()
+        obs_name = ['A_obs_%s' % C_name,
+                    'A2_obs_%s' % C_name,
+                    'N_obs_%s' % C_name,
+                    'Y_obs_%s' % C_name]
 
-    # plt.figure()
-    col=1
-    cell_tot = sum(x.all[name] for name in obs_name)
-    sum_prev = np.sum(np.array([val for val in x.all[obs_name[i]]]) for i in range(len(obs_name)-1))
-    ax[row,col].fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1], color=color[-1])
-    for i in range(len(obs_name) - 2, 0, -1):
-        ax[row,col].fill_between(tspan, sum_prev / cell_tot, (sum_prev - x.all[obs_name[i]]) / cell_tot, label=label[i],
-                         color=color[i])
-        sum_prev -= x.all[obs_name[i]]
-    ax[row,col].fill_between(tspan, sum_prev / cell_tot, label=label[0], color=color[0])
-    ax[row,col].set_xlabel('time (d)') #, fontsize=16)
-    ax[row,col].set_ylabel('cell fraction') #, fontsize=16)
-    ax[row,col].xaxis.set_tick_params() #labelsize=14)
-    ax[row,col].yaxis.set_tick_params() #labelsize=14)
-    # ax[row,col].legend(loc=(0.75, 0.6), framealpha=1)
-    # plt.tight_layout()
-    row += 1
-plt.tight_layout(pad=0)
+        color = ['darkred', 'r', 'c', 'b']
+
+        col = 0  # cell counts
+        label = []
+        suffix = ''
+        for i, name in enumerate(obs_name):
+            label.append(name[:name.find('_')])
+            if C_name == 'E':
+                suffix = '_epith'
+            elif C_name == 'S':
+                suffix = '_stroma'
+            else:
+                suffix = '_total'
+            label[-1] += suffix
+            label_subtype = label[-1]
+            if not lab:
+                label_subtype = None
+            ax[row, col].plot(tspan, x.all[name], lw=2, label=label_subtype, color=color[i])
+        label_tot = 'Cells%s' % suffix
+        if not lab:
+            label_tot = None
+        ax[row, col].plot(tspan, x.all['Cells_%s' % C_name], 'k--', lw=2, label=label_tot)
+        if row == 2:
+            ax[row, col].set_xlabel('time (d)')  # , fontsize=16)
+        ax[row, col].set_ylabel('cell count')  # , fontsize=16)
+        ax[row, col].xaxis.set_tick_params()  # labelsize=14)
+        ax[row, col].yaxis.set_tick_params()  # labelsize=14)
+        ax[row, col].ticklabel_format(style='sci', axis='y', scilimits=(0, 0))
+        ax[row, col].legend(loc=0, fontsize=6)
+
+        col = 1  # ratios of cell counts
+        cell_tot = sum(x.all[name] for name in obs_name)
+        sum_prev = np.sum(np.array([val for val in x.all[obs_name[i]]]) for i in range(len(obs_name)-1))
+        ax[row, col].fill_between(tspan, [1]*len(tspan), sum_prev / cell_tot, label=label[-1], color=color[-1])
+        for i in range(len(obs_name) - 2, 0, -1):
+            ax[row, col].fill_between(tspan, sum_prev / cell_tot, (sum_prev - x.all[obs_name[i]]) / cell_tot,
+                                      label=label[i], color=color[i])
+            sum_prev -= x.all[obs_name[i]]
+        ax[row, col].fill_between(tspan, sum_prev / cell_tot, label=label[0], color=color[0])
+        # RPM mice: 4, 5.7, 7.4, 9 weeks (RPM1-4, estimates)
+        weeks_mice = np.linspace(4, 9, 4)
+        for w in weeks_mice:
+            ax[row, col].plot([w*7, w*7], [0, 1], 'w--', lw=2)
+        ##########
+        if row == 2:
+            ax[row, col].set_xlabel('time (d)')  # , fontsize=16)
+        ax[row, col].set_ylabel('cell fraction')  # , fontsize=16)
+        ax[row, col].xaxis.set_tick_params()  # labelsize=14)
+        ax[row, col].yaxis.set_tick_params()  # labelsize=14)
+        # ax[row,col].legend(loc=(0.75, 0.6), framealpha=1)
+        row += 1
+
+plt.tight_layout()
 plt.show()

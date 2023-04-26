@@ -45,12 +45,12 @@ KD_Kx_A2_die = [1000.0, 1000.0]
 k_Y_div_0 = [0.4, 4.0]  # [epithelium, stroma]
 k_Y_div_x = [0.3, 3.0]  # [2.0, 1.0]
 KD_Kx_Y_div = [1000.0, 1000.0]  # [500.0, 10000.0]
-k_Y_die = [0.0, 0.0]
+k_Y_die = [0.0, 2.0]
 
 # #### A <> N #####
 
 kf_diff_A_N = [0.1, 0.5]  # [0.01, 0.1]  # [epithelium, stroma]
-kr_diff_A_N = [0.5, 0.1]  # [0.1, 0.1]
+kr_diff_A_N = [0.5, 0.01]  # [0.1, 0.1]
 
 # #### A <> A2 #####
 
@@ -59,12 +59,12 @@ kr_diff_A_A2 = [0, 0]  # [0.075, 0.075]
 
 # #### N <> A2 #####
 
-kf_diff_N_A2 = [0.5, 0.1]  # [0.001, 0.1]  # [epithelium, stroma]
-kr_diff_N_A2 = [0, 0.5]  # [0.1, 0.1]
+kf_diff_N_A2 = [0.5, 0.01]  # [0.001, 0.1]  # [epithelium, stroma]
+kr_diff_N_A2 = [0.1, 0.5]  # [0.1, 0.1]
 
 # #### N <> Y #####
 
-kf_diff_N_Y = [0, 1]  # [0.001, 0.1]  # [epithelium, stroma]
+kf_diff_N_Y = [0, 0.5]  # [0.001, 0.1]  # [epithelium, stroma]
 kr_diff_N_Y = [0.5, 0]  # [epithelium, stroma]
 
 Model()
@@ -83,10 +83,10 @@ Monomer('Y')
 Compartment('E', parent=None, dimension=3)  # epithelium
 Compartment('S', parent=None, dimension=3)  # stroma
 
-Parameter('A_init_E', 258)
-Parameter('N_init_E', 41)
-Parameter('A2_init_E', 89)
-Parameter('Y_init_E', 13)
+Parameter('A_init_E', 1)  # 258)
+Parameter('N_init_E', 0)  # 41)
+Parameter('A2_init_E', 0)  # 89)
+Parameter('Y_init_E', 0)  # 13)
 
 Initial(A()**E, A_init_E)
 Initial(N()**E, N_init_E)
@@ -257,18 +257,23 @@ sim = ScipyOdeSimulator(model, verbose=True)
 # Simulate period before invasion begins
 param_values = {'kf_A_epi_to_stroma': 0, 'kf_N_epi_to_stroma': 0,
                 'kf_A2_epi_to_stroma': 0, 'kf_Y_epi_to_stroma': 0}
-tspan1 = np.linspace(0, 30, 31)
+t_invasion = 100
+tspan1 = np.linspace(0, t_invasion, t_invasion+1)
 output1 = sim.run(tspan=tspan1, param_values=param_values)
 
 # Simulation invasion
 param_values = {'kf_A_epi_to_stroma': 0.1, 'kf_N_epi_to_stroma': 0.1,
                 'kf_A2_epi_to_stroma': 0.1, 'kf_Y_epi_to_stroma': 0.1}
-tspan2 = np.linspace(30, 80, 51)
+tspan2 = np.linspace(t_invasion, t_invasion+50, 51)
 output2 = sim.run(tspan2, param_values=param_values)
 
-fig, ax = plt.subplots(nrows=3, ncols=2, sharex='all', figsize=(6.4, 6.4))  # (6.4, 4.8)
+fig, ax = plt.subplots(nrows=3, ncols=2, sharex='all', figsize=(9.6, 8.0))  # (6.4, 4.8)
+t_left = 0.8*tspan1[-1]
+t_right = tspan2[-1]
+plt.xlim(left=t_left, right=t_right)
 
 for lab, tspan, x in zip([True, False], [tspan1, tspan2], [output1, output2]):
+# for lab, tspan, x in zip([True], [tspan2], [output2]):
     row = 0
     for C_name in [c.name for c in cmp] + ['TOT']:
 
@@ -319,7 +324,7 @@ for lab, tspan, x in zip([True, False], [tspan1, tspan2], [output1, output2]):
         # RPM mice: 4, 5.7, 7.4, 9 weeks (RPM1-4, estimates)
         weeks_mice = np.linspace(4, 9, 4)
         for w in weeks_mice:
-            ax[row, col].plot([w*7, w*7], [0, 1], 'w--', lw=2)
+            ax[row, col].plot([t_invasion + (w-weeks_mice[0])*7+1, t_invasion + (w-weeks_mice[0])*7+1], [0, 1], 'w--', lw=2)
         ##########
         if row == 2:
             ax[row, col].set_xlabel('time (d)')  # , fontsize=16)
